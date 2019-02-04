@@ -29,5 +29,6 @@
     "scripts": {
         "test": "phpunit",
         "csfix": "php-cs-fixer fix -vvv"
-    }
+    },
+    "bin": ["bin/cronarchy-daemon.php"]
 }
