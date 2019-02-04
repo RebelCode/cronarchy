@@ -95,7 +95,7 @@ class Table
      */
     public function query($query, $vargs = [])
     {
-        $prepared = esc_sql(vsprintf($query, $vargs));
+        $prepared = vsprintf($query, $this->escapeArgs($vargs));
         $numRows = $this->wpdb->query($prepared);
 
         if ($numRows !== false) {
@@ -172,7 +172,7 @@ class Table
      */
     public function update($data, $formats = [], $condition = null, $vargs = [])
     {
-        $fields = $this->buildFields($data, $formats);
+        $fields = $this->buildUpdateFields($data, $formats);
         $where = $this->buildWhere($condition, $vargs);
 
         $query = "UPDATE `{$this->name}` SET $fields $where;";
@@ -197,7 +197,7 @@ class Table
         $where = $this->buildWhere($condition, $vargs);
         $query = "DELETE FROM `{$this->name}` " . $where;
 
-        return $this->query($query, $vargs);
+        return $this->query($query);
     }
 
     /**
@@ -216,7 +216,21 @@ class Table
             return '';
         }
 
-        return 'WHERE ' . vsprintf($condition, $vargs);
+        return 'WHERE ' . vsprintf($condition, $this->escapeArgs($vargs));
+    }
+
+    /**
+     * Escapes query arguments.
+     *
+     * @since [*next-version*]
+     *
+     * @param array $args The arguments to escape.
+     *
+     * @return array The escaped arguments.
+     */
+    protected function escapeArgs(array $args)
+    {
+        return array_map('esc_sql', $args);
     }
 
     protected function buildFields(array $data, array $formats)
@@ -225,7 +239,7 @@ class Table
 
         foreach ($data as $key => $value) {
             if (is_string($value)) {
-                $value = sprintf('"%s"', $value);
+                $value = sprintf('"%s"', esc_sql($value));
             }
 
             $format = isset($formats[$key])
