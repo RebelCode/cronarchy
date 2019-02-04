@@ -59,19 +59,26 @@ class JobManager
      *
      * @since [*next-version*]
      *
-     * @param int $id The job ID.
+     * @param int|null    $id         Optional ID of the job to retrieve.
+     * @param int|null    $time       Optional timestamp to get only jobs scheduled for this time.
+     * @param string|null $hook       Optional hook name to get only jobs scheduled with this hook.
+     * @param array|null  $args       Optional array of hook args to get only jobs with these hook args.
+     * @param int|null    $recurrence Optional interval time to get only jobs with this recurrence.
+     *                                Use zero to get jobs that do not repeat.
      *
      * @return Job The job instance.
      *
      * @throws OutOfRangeException If no job with the given ID was found.
      * @throws Exception If an error occurred while retrieving the job from the database.
      */
-    public function getJob($id)
+    public function getJob($id, $time = null, $hook = null, $args = null, $recurrence = null)
     {
-        $rows = $this->jobsTable->fetch('`id` = %d', [$id]);
+        $rows = ($id === null)
+            ? $this->getJobs($time, $hook, $args, $recurrence)
+            : $this->jobsTable->fetch('`id` = %d', [$id]);
 
         if (count($rows) === 0) {
-            throw new OutOfRangeException(sprintf('No job with ID "%d" was found', $id));
+            throw new OutOfRangeException('No matching job was found');
         }
 
         $job = $this->createJobFromRecord($rows[0]);
@@ -181,38 +188,6 @@ class JobManager
         $this->jobsTable->update($data, $formats, '`id` = %s', [$id]);
 
         return $id;
-    }
-
-    /**
-     * Retrieves a scheduled job.
-     *
-     * @since [*next-version*]
-     *
-     * @param string   $hook       The hook that the job was scheduled with.
-     * @param array    $args       Optional list of arguments that the job was scheduled with.
-     * @param int|null $recurrence Optional recurrence time, in seconds.
-     *
-     * @return Job The scheduled job.
-     *
-     * @throws OutOfRangeException If no job was found for the given hook and arguments.
-     * @throws Exception If an error occurred while inserting the job into the database.
-     */
-    public function getScheduledJob($hook, $args = [], $recurrence = null)
-    {
-        $sArgs = $this->serializeArgs($args);
-        $nRecurrence = ($recurrence === null) ? 'IS NULL' : '= ' . $recurrence;
-        $jobs = $this->jobsTable->fetch(
-            '`hook` = "%s" AND `args` = "%s" AND `recurrence` %s',
-            [$hook, $sArgs, $nRecurrence]
-        );
-
-        if (empty($jobs)) {
-            throw new OutOfRangeException(
-                sprintf('No job is scheduled for hook "%s" with args "%s"', $hook, $sArgs)
-            );
-        }
-
-        return reset($jobs);
     }
 
     /**
