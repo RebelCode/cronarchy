@@ -104,24 +104,29 @@ class JobManager
     public function getJobs($time = null, $hook = null, $args = null, $recurrence = null)
     {
         $conditionParts = [];
+        $conditionArgs = [];
 
         if ($time !== null) {
-            $conditionParts[] = sprintf('`time` = "%s"', $this->tsToDatabaseDate($time));
+            $conditionParts[] = '`time` = "%s"';
+            $conditionArgs[] = $this->tsToDatabaseDate($time);
         }
         if ($hook !== null) {
-            $conditionParts[] = sprintf('`hook` = "%s"', $hook);
+            $conditionParts[] = '`hook` = "%s"';
+            $conditionArgs[] = $hook;
         }
         if ($args !== null) {
-            $conditionParts[] = sprintf('`args` = "%s"', $this->serializeArgs($args));
+            $conditionParts[] = '`args` = "%s"';
+            $conditionArgs[] = $this->serializeArgs($args);
         }
         if ($recurrence !== null) {
             $conditionParts[] = ($recurrence === 0)
-                ? sprintf('`recurrence` IS NULL')
-                : sprintf('`recurrence` === %d', $recurrence);
+                ? '`recurrence` IS NULL'
+                : '`recurrence` === %d';
+            $conditionArgs[] = $recurrence;
         }
 
         $condition = implode(' AND ', $conditionParts);
-        $records = $this->jobsTable->fetch($condition, []);
+        $records = $this->jobsTable->fetch($condition, $conditionArgs);
         $jobs = array_map([$this, 'createJobFromRecord'], $records);
 
         return $jobs;
