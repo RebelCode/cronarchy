@@ -195,20 +195,13 @@ class JobManager
      *
      * @since [*next-version*]
      *
-     * @param string   $hook       The hook that the job was scheduled with.
-     * @param array    $args       Optional list of arguments that the job was scheduled with.
-     * @param int|null $recurrence Optional recurrence time, in seconds.
+     * @param int $id The job ID.
      *
      * @throws Exception If an error occurred while cancelling the job in the database.
      */
-    public function cancelJob($hook, $args = [], $recurrence = null)
+    public function cancelJob($id)
     {
-        try {
-            $job = $this->getScheduledJob($hook, $args, $recurrence);
-            $this->deleteJob($job->getId());
-        } catch (OutOfRangeException $exception) {
-            return;
-        }
+        $this->jobsTable->delete('`id` = %d', [$id]);
     }
 
     /**
@@ -234,20 +227,6 @@ class JobManager
         $job = $this->createJobFromRecord($row[0]);
 
         return $job;
-    }
-
-    /**
-     * Deletes a job by ID.
-     *
-     * @since [*next-version*]
-     *
-     * @param int $id The job ID.
-     *
-     * @throws Exception If an error occurred while deleting the job from the database.
-     */
-    public function deleteJob($id)
-    {
-        $this->jobsTable->delete('`id` = %d', [$id]);
     }
 
     /**
