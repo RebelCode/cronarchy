@@ -71,25 +71,16 @@ if ($runner->getState() < $runner::STATE_PREPARING) {
 $runner->setState($runner::STATE_RUNNING);
 
 try {
-    // Run all pending jobs
+    // Iterate all pending jobs
     foreach ($manager->getPendingJobs() as $job) {
+        // Run the job
         $job->run();
 
-        // If the job has a set recurrence time, schedule another job at that time
-        $recurrence = $job->getRecurrence();
-        if ($recurrence !== null && $recurrence > 0) {
-            $newJob = new Job(
-                null,
-                $job->getTimestamp() + $recurrence,
-                $job->getHook(),
-                $job->getArgs(),
-                $recurrence
-            );
-            $manager->scheduleJob($newJob);
-        }
-
-        // Remove this job from storage
-        $manager->cancelJob($job->getId());
+        $jobId = $job->getId();
+        // Schedule the next recurrence if applicable
+        $manager->scheduleJobRecurrence($jobId);
+        // Delete the run job
+        $manager->deleteJob($jobId);
     }
 } catch (Exception $exception) {
 }
