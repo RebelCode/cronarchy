@@ -81,9 +81,9 @@ class JobManager
             throw new OutOfRangeException('No matching job was found');
         }
 
-        $job = $this->createJobFromRecord($rows[0]);
-
-        return $job;
+        return ($rows[0] instanceof Job)
+            ? $rows[0]
+            : $this->createJobFromRecord($rows[0]);
     }
 
     /**
