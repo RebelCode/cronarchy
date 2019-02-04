@@ -191,11 +191,13 @@ class JobManager
     }
 
     /**
-     * Cancels the next invocation of a scheduled job and schedules the following invocation, if applicable.
+     * Cancels the next invocation of a scheduled job and schedules the next invocation, if applicable.
      *
      * @since [*next-version*]
      *
      * @param int $id The job ID.
+     *
+     * @return Job|null The job instance for the next invocation, or null if no recurrence job was scheduled.
      *
      * @throws OutOfRangeException If no job exists in the database with the given ID.
      * @throws Exception If an error occurred while cancelling the job in the database.
@@ -207,13 +209,15 @@ class JobManager
         $recurrence = $job->getRecurrence();
 
         if ($recurrence === null || $recurrence < 1) {
-            return;
+            return null;
         }
 
         $newTime = $job->getTimestamp() + $recurrence;
         $newJob = new Job(null, $newTime, $job->getHook(), $job->getArgs(), $recurrence);
 
         $this->scheduleJob($newJob);
+
+        return $newJob;
     }
 
     /**
