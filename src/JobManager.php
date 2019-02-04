@@ -55,6 +55,31 @@ class JobManager
     }
 
     /**
+     * Retrieves a job by ID.
+     *
+     * @since [*next-version*]
+     *
+     * @param int $id The job ID.
+     *
+     * @return Job The job instance.
+     *
+     * @throws OutOfRangeException If no job with the given ID was found.
+     * @throws Exception If an error occurred while retrieving the job from the database.
+     */
+    public function getJob($id)
+    {
+        $rows = $this->jobsTable->fetch('`id` = %d', [$id]);
+
+        if (count($rows) === 0) {
+            throw new OutOfRangeException(sprintf('No job with ID "%d" was found', $id));
+        }
+
+        $job = $this->createJobFromRecord($rows[0]);
+
+        return $job;
+    }
+
+    /**
      * Retrieves scheduled jobs, optionally filtering them based on certain criteria.
      *
      * @since [*next-version*]
@@ -232,31 +257,6 @@ class JobManager
         $this->getJob($id);
 
         $this->jobsTable->delete('`id` = %d', [$id]);
-    }
-
-    /**
-     * Retrieves a job by ID.
-     *
-     * @since [*next-version*]
-     *
-     * @param int $id The job ID.
-     *
-     * @return Job The job instance.
-     *
-     * @throws OutOfRangeException If no job with the given ID was found.
-     * @throws Exception If an error occurred while retrieving the job from the database.
-     */
-    public function getJob($id)
-    {
-        $row = $this->jobsTable->fetch('`id` = %d', [$id]);
-
-        if (count($row) === 0) {
-            throw new OutOfRangeException(sprintf('No job with ID "%d" was found', $id));
-        }
-
-        $job = $this->createJobFromRecord($row[0]);
-
-        return $job;
     }
 
     /**
