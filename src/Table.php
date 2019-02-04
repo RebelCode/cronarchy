@@ -175,13 +175,8 @@ class Table
         $where = $this->buildWhere($condition, $vargs);
 
         $query = "UPDATE `{$this->name}` SET $fields $where;";
-        $success = $this->wpdb->query($query);
 
-        if ($success === false) {
-            throw new Exception($this->wpdb->last_error);
-        }
-
-        return $this->wpdb->rows_affected;
+        return $this->query($query);
     }
 
     /**
