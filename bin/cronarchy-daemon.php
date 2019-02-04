@@ -89,7 +89,7 @@ try {
         }
 
         // Remove this job from storage
-        $manager->deleteJob($job->getId());
+        $manager->cancelJob($job->getId());
     }
 } catch (Exception $exception) {
 }
