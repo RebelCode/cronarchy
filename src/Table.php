@@ -233,7 +233,17 @@ class Table
         return array_map('esc_sql', $args);
     }
 
-    protected function buildFields(array $data, array $formats)
+    /**
+     * Builds the fields for UPDATE queries.
+     *
+     * @since [*next-version*]
+     *
+     * @param array $data    The data, mapping column names to values.
+     * @param array $formats The corresponding formats, mapping column names to either "%d", "%f" or "%s".
+     *
+     * @return string The build fields string.
+     */
+    protected function buildUpdateFields(array $data, array $formats)
     {
         $fields = [];
 
