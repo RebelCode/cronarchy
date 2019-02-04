@@ -55,17 +55,43 @@ class JobManager
     }
 
     /**
-     * Retrieves all the scheduled jobs.
+     * Retrieves scheduled jobs, optionally filtering them based on certain criteria.
      *
      * @since [*next-version*]
      *
+     * @param int|null    $time       Optional timestamp to get only jobs scheduled for this time.
+     * @param string|null $hook       Optional hook name to get only jobs scheduled with this hook.
+     * @param array|null  $args       Optional array of hook args to get only jobs with these hook args.
+     * @param int|null    $recurrence Optional interval time to get only jobs with this recurrence.
+     *                                Use zero to get jobs that do not repeat.
+     *
      * @return Job[] An array of {@link Job} instances.
      *
-     * @throws Exception If an error occurred while retrieving jobs from the database.
+     * @throws Exception If an error occurred while reading the jobs from storage.
      */
-    public function getJobs()
+    public function getJobs($time = null, $hook = null, $args = null, $recurrence = null)
     {
-        return array_map([$this, 'createJobFromRecord'], $this->jobsTable->fetch());
+        $conditionParts = [];
+
+        if ($time !== null) {
+            $conditionParts[] = sprintf('`time` = "%s"', $this->tsToDatabaseDate($time));
+        }
+        if ($hook !== null) {
+            $conditionParts[] = sprintf('`hook` = "%s"', $hook);
+        }
+        if ($args !== null) {
+            $conditionParts[] = sprintf('`args` = "%s"', $this->serializeArgs($args));
+        }
+        if ($recurrence !== null) {
+            $conditionParts[] = ($recurrence === 0)
+                ? sprintf('`recurrence` IS NULL')
+                : sprintf('`recurrence` === %d', $recurrence);
+        }
+
+        $condition = implode(' AND ', $conditionParts);
+        $records = $this->jobsTable->fetch($condition, []);
+
+        return array_map([$this, 'createJobFromRecord'], $records);
     }
 
     /**
