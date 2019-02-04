@@ -122,8 +122,9 @@ class JobManager
 
         $condition = implode(' AND ', $conditionParts);
         $records = $this->jobsTable->fetch($condition, []);
+        $jobs = array_map([$this, 'createJobFromRecord'], $records);
 
-        return array_map([$this, 'createJobFromRecord'], $records);
+        return $jobs;
     }
 
     /**
@@ -137,7 +138,10 @@ class JobManager
      */
     public function getPendingJobs()
     {
-        return array_map([$this, 'createJobFromRecord'], $this->jobsTable->fetch('`timestamp` < NOW()'));
+        $records = $this->jobsTable->fetch('`timestamp` < NOW()');
+        $jobs = array_map([$this, 'createJobFromRecord'], $records);
+
+        return $jobs;
     }
 
     /**
