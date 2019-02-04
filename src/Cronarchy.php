@@ -68,6 +68,18 @@ class Cronarchy
     }
 
     /**
+     * Initializes the instance.
+     *
+     * @since [*next-version*]
+     */
+    public function init()
+    {
+        if (!(defined('DOING_CRON') && DOING_CRON)) {
+            $this->getRunner()->runDaemon();
+        }
+    }
+
+    /**
      * Creates a new cronarchy instance.
      *
      * @since [*next-version*]
@@ -110,10 +122,6 @@ class Cronarchy
         add_filter($filter, function () use ($instance) {
             return $instance;
         });
-
-        if (!(defined('DOING_CRON') && DOING_CRON)) {
-           $runner->runDaemon();
-        }
 
         return $instance;
     }
