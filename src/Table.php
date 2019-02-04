@@ -95,7 +95,8 @@ class Table
      */
     public function query($query, $vargs = [])
     {
-        $numRows = $this->wpdb->query(vsprintf($query, $vargs));
+        $prepared = esc_sql(vsprintf($query, $vargs));
+        $numRows = $this->wpdb->query($prepared);
 
         if ($numRows !== false) {
             return $numRows;
