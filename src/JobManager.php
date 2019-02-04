@@ -191,16 +191,46 @@ class JobManager
     }
 
     /**
-     * Cancels a scheduled job.
+     * Cancels the next invocation of a scheduled job and schedules the following invocation, if applicable.
      *
      * @since [*next-version*]
      *
      * @param int $id The job ID.
      *
+     * @throws OutOfRangeException If no job exists in the database with the given ID.
      * @throws Exception If an error occurred while cancelling the job in the database.
      */
-    public function cancelJob($id)
+    public function scheduleJobRecurrence($id)
     {
+        $job = $this->getJob($id);
+
+        $recurrence = $job->getRecurrence();
+
+        if ($recurrence === null || $recurrence < 1) {
+            return;
+        }
+
+        $newTime = $job->getTimestamp() + $recurrence;
+        $newJob = new Job(null, $newTime, $job->getHook(), $job->getArgs(), $recurrence);
+
+        $this->scheduleJob($newJob);
+    }
+
+    /**
+     * Deletes a job from the database.
+     *
+     * @since [*next-version*]
+     *
+     * @param int $id The job ID.
+     *
+     * @throws OutOfRangeException If no job exists in the database with the given ID.
+     * @throws Exception If an error occurred while deleting the job in the database.
+     */
+    public function deleteJob($id)
+    {
+        // To check if job exists and throw OutOfRangeException if not
+        $this->getJob($id);
+
         $this->jobsTable->delete('`id` = %d', [$id]);
     }
 
