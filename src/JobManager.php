@@ -99,7 +99,7 @@ class JobManager
     public function scheduleJob(Job $job)
     {
         $data = [
-            'timestamp' => gmdate('Y-m-d H:i:s', $job->getTimestamp()),
+            'timestamp' => $this->tsToDatabaseDate($job->getTimestamp()),
             'hook' => $job->getHook(),
             'args' => serialize($job->getArgs()),
             'recurrence' => $job->getRecurrence(),
@@ -276,5 +276,19 @@ class JobManager
         ksort($args, SORT_NUMERIC | SORT_ASC);
 
         return $args;
+    }
+
+    /**
+     * Transforms a timestamp into a database date string.
+     *
+     * @since [*next-version*]
+     *
+     * @param int $timestamp The timestamp to transform.
+     *
+     * @return string The date string.
+     */
+    protected function tsToDatabaseDate($timestamp)
+    {
+        return gmdate('Y-m-d H:i:s', $timestamp);
     }
 }
