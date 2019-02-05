@@ -55,7 +55,7 @@ class JobManager
     }
 
     /**
-     * Retrieves a job by ID.
+     * Retrieves a single job by ID or the first job that matches a specific set of properties.
      *
      * @since [*next-version*]
      *
@@ -75,15 +75,13 @@ class JobManager
     {
         $rows = ($id === null)
             ? $this->getJobs($time, $hook, $args, $recurrence)
-            : $this->jobsTable->fetch('`id` = %d', [$id]);
+            : $this->getJobs([$id]);
 
         if (count($rows) === 0) {
             throw new OutOfRangeException('No matching job was found');
         }
 
-        return ($rows[0] instanceof Job)
-            ? $rows[0]
-            : $this->createJobFromRecord($rows[0]);
+        return $rows[0];
     }
 
     /**
