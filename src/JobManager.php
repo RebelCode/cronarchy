@@ -221,7 +221,7 @@ class JobManager
      *
      * @throws Exception If an error occurred while deleting the job in the database.
      */
-    public function deleteJob($ids = null, $time = null, $hook = null, $args = null, $recurrence = null)
+    public function deleteJobs($ids = null, $time = null, $hook = null, $args = null, $recurrence = null)
     {
         list($condition, $conditionArgs) = $this->buildJobCondition($ids, $time, $hook, $args, $recurrence);
 
