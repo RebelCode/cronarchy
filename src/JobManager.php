@@ -91,6 +91,7 @@ class JobManager
      *
      * @since [*next-version*]
      *
+     * @param int[]|null  $ids        Optional list of IDs to get only jobs with any of those IDs.
      * @param int|null    $time       Optional timestamp to get only jobs scheduled for this time.
      * @param string|null $hook       Optional hook name to get only jobs scheduled with this hook.
      * @param array|null  $args       Optional array of hook args to get only jobs with these hook args.
@@ -101,9 +102,9 @@ class JobManager
      *
      * @throws Exception If an error occurred while reading the jobs from storage.
      */
-    public function getJobs($time = null, $hook = null, $args = null, $recurrence = null)
+    public function getJobs($ids = null, $time = null, $hook = null, $args = null, $recurrence = null)
     {
-        list($condition, $conditionArgs) = $this->buildJobCondition(null, $time, $hook, $args, $recurrence);
+        list($condition, $conditionArgs) = $this->buildJobCondition($ids, $time, $hook, $args, $recurrence);
 
         $records = $this->jobsTable->fetch($condition, $conditionArgs);
         $jobs = array_map([$this, 'createJobFromRecord'], $records);
