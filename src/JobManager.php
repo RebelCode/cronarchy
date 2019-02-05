@@ -299,23 +299,23 @@ class JobManager
      *
      * @since [*next-version*]
      *
-     * @param int|null    $id         Optional ID to match only the job with this ID.
-     * @param int|null    $time       Optional timestamp to match only jobs scheduled for this time.
-     * @param string|null $hook       Optional hook name to match only jobs scheduled with this hook.
-     * @param array|null  $args       Optional array of hook args to match only jobs with these hook args.
-     * @param int|null    $recurrence Optional interval time to match only jobs with this recurrence.
-     *                                Use zero to get jobs that do not repeat.
+     * @param int[]|null  $ids           Optional list of IDs to match only the jobs with any of those IDs.
+     * @param int|null    $time          Optional timestamp to match only jobs scheduled for this time.
+     * @param string|null $hook          Optional hook name to match only jobs scheduled with this hook.
+     * @param array|null  $args          Optional array of hook args to match only jobs with these hook args.
+     * @param int|null    $recurrence    Optional interval time to match only jobs with this recurrence.
+     *                                   Use zero to get jobs that do not repeat.
      *
      * @return array The build condition
      */
-    protected function buildJobCondition($id = null, $time = null, $hook = null, $args = null, $recurrence = null)
+    protected function buildJobCondition($ids = null, $time = null, $hook = null, $args = null, $recurrence = null)
     {
         $conditionParts = [];
         $conditionArgs = [];
 
-        if ($id !== null) {
-            $conditionParts[] = '`id` = "%d"';
-            $conditionArgs = $id;
+        if ($ids !== null) {
+            $conditionParts[] = '`id` IN (%s)';
+            $conditionArgs = implode(',', (array) $ids);
         }
         if ($time !== null) {
             $conditionParts[] = '`time` = "%s"';
