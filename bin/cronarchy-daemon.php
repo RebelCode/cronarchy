@@ -2,7 +2,6 @@
 
 use RebelCode\Cronarchy\Cronarchy;
 use RebelCode\Cronarchy\DaemonRunner;
-use RebelCode\Cronarchy\Job;
 
 /**
  * Performs clean up and finalization.
@@ -21,7 +20,22 @@ function cronarchyExit(Cronarchy $instance = null)
         $runner->setLastRunTime();
     }
 
+    cronarchyLog('Exiting ...');
+
     exit;
+}
+
+/**
+ * Logs a message to file.
+ *
+ * @since [*next-version*]
+ *
+ * @param string $text The text to log.
+ */
+function cronarchyLog($text)
+{
+    $message = sprintf('[%s] %s' . PHP_EOL, date('D, d M Y - H:i:s'), $text);
+    file_put_contents(ABSPATH . 'cronarchy_log.txt', $message, FILE_APPEND);
 }
 
 // Begin capturing output
@@ -55,6 +69,7 @@ require_once $cronarchyWpFile;
 // Get the instance
 $instance = apply_filters($cronarchyFilter, null);
 if (!$instance instanceof Cronarchy) {
+    cronarchyLog('Invalid Cronarchy instance retrieved from filter');
     cronarchyExit($instance);
 }
 // Get the instance's components
@@ -65,10 +80,13 @@ set_time_limit($runner->getMaxRunTime());
 
 // Ensure the runner is not in an idle state
 if ($runner->getState() < $runner::STATE_PREPARING) {
+    cronarchyLog('Daemon is not in STATE_PREPARING state and should not have been invoked');
     cronarchyExit($instance);
 }
 // Update the runner state to indicate that it is running
 $runner->setState($runner::STATE_RUNNING);
+
+cronarchyLog('Running jobs ...');
 
 try {
     // Iterate all pending jobs
@@ -77,6 +95,8 @@ try {
             // Run the job
             $job->run();
         } catch (Exception $innerException) {
+            cronarchyLog('A job has erred:');
+            cronarchyLog($innerException->getMessage());
             // Skip the recurrence scheduling and deletion
             continue;
         }
@@ -86,7 +106,8 @@ try {
         $manager->deleteJobs([$job->getId()]);
     }
 } catch (Exception $outerException) {
-    // Stop
+    cronarchyLog('Daemon failed to run all jobs:');
+    cronarchyLog($outerException->getMessage());
 }
 
 // Capture and flush any generated output
@@ -94,6 +115,7 @@ ob_get_clean();
 
 // If the runner is not set to ping itself, clean up and exit
 if (!$runner->isSelfPinging()) {
+    cronarchyLog('Daemon finished successfully');
     cronarchyExit($instance);
 }
 
