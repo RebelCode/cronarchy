@@ -80,7 +80,7 @@ try {
         // Schedule the next recurrence if applicable
         $manager->scheduleJobRecurrence($jobId);
         // Delete the run job
-        $manager->deleteJob($jobId);
+        $manager->deleteJob([$jobId]);
     }
 } catch (Exception $exception) {
 }
