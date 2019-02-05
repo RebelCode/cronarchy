@@ -41,7 +41,7 @@ class JobManager
     public function __construct($instanceId, Table $jobsTable)
     {
         $this->instanceId = $instanceId;
-        $this->jobsTable = $jobsTable;
+        $this->jobsTable  = $jobsTable;
     }
 
     /**
@@ -66,16 +66,15 @@ class JobManager
      * @param int|null    $recurrence Optional interval time to get only jobs with this recurrence.
      *                                Use zero to get jobs that do not repeat.
      *
-     * @return Job The job instance.
-     *
      * @throws OutOfRangeException If no job with the given ID was found.
-     * @throws Exception If an error occurred while retrieving the job from the database.
+     * @throws Exception           If an error occurred while retrieving the job from the database.
+     *
+     * @return Job The job instance.
      */
     public function getJob($id, $time = null, $hook = null, $args = null, $recurrence = null)
     {
-        $rows = ($id === null)
-            ? $this->getJobs($time, $hook, $args, $recurrence)
-            : $this->getJobs([$id]);
+        $ids  = ($id === null) ? [] : [$id];
+        $rows = $this->getJobs($ids, $time, $hook, $args, $recurrence);
 
         if (count($rows) === 0) {
             throw new OutOfRangeException('No matching job was found');
@@ -96,16 +95,16 @@ class JobManager
      * @param int|null    $recurrence Optional interval time to get only jobs with this recurrence.
      *                                Use zero to get jobs that do not repeat.
      *
-     * @return Job[] An array of {@link Job} instances.
-     *
      * @throws Exception If an error occurred while reading the jobs from storage.
+     *
+     * @return Job[] An array of {@link Job} instances.
      */
     public function getJobs($ids = null, $time = null, $hook = null, $args = null, $recurrence = null)
     {
         list($condition, $conditionArgs) = $this->buildJobCondition($ids, $time, $hook, $args, $recurrence);
 
         $records = $this->jobsTable->fetch($condition, $conditionArgs);
-        $jobs = array_map([$this, 'createJobFromRecord'], $records);
+        $jobs    = array_map([$this, 'createJobFromRecord'], $records);
 
         return $jobs;
     }
@@ -115,14 +114,14 @@ class JobManager
      *
      * @since [*next-version*]
      *
-     * @return Job[] An array of {@link Job} instances.
-     *
      * @throws Exception If an error occurred while retrieving jobs from the database.
+     *
+     * @return Job[] An array of {@link Job} instances.
      */
     public function getPendingJobs()
     {
         $records = $this->jobsTable->fetch('`timestamp` < NOW()');
-        $jobs = array_map([$this, 'createJobFromRecord'], $records);
+        $jobs    = array_map([$this, 'createJobFromRecord'], $records);
 
         return $jobs;
     }
@@ -137,26 +136,26 @@ class JobManager
      *
      * @param Job $job the job to schedule.
      *
-     * @return int The scheduled job's ID.
-     *
      * @throws Exception If an error occurred while inserting the job into the database.
+     *
+     * @return int The scheduled job's ID.
      */
     public function scheduleJob(Job $job)
     {
         $data = [
-            'timestamp' => $this->tsToDatabaseDate($job->getTimestamp()),
-            'hook' => $job->getHook(),
-            'args' => serialize($job->getArgs()),
+            'timestamp'  => $this->tsToDatabaseDate($job->getTimestamp()),
+            'hook'       => $job->getHook(),
+            'args'       => serialize($job->getArgs()),
             'recurrence' => $job->getRecurrence(),
         ];
         $formats = [
-            'timestamp' => '%s',
-            'hook' => '%s',
-            'args' => '%s',
+            'timestamp'  => '%s',
+            'hook'       => '%s',
+            'args'       => '%s',
             'recurrence' => '%d',
         ];
 
-        $id = $job->getId();
+        $id     = $job->getId();
         $exists = false;
 
         if ($id !== null) {
@@ -182,17 +181,15 @@ class JobManager
      *
      * @since [*next-version*]
      *
-     * @param int $id The job ID.
-     *
-     * @return Job|null The job instance for the next invocation, or null if no recurrence job was scheduled.
+     * @param Job $job The job instance.
      *
      * @throws OutOfRangeException If no job exists in the database with the given ID.
-     * @throws Exception If an error occurred while cancelling the job in the database.
+     * @throws Exception           If an error occurred while cancelling the job in the database.
+     *
+     * @return Job|null The job instance for the next invocation, or null if no recurrence job was scheduled.
      */
-    public function scheduleJobRecurrence($id)
+    public function scheduleJobRecurrence(Job $job)
     {
-        $job = $this->getJob($id);
-
         $recurrence = $job->getRecurrence();
 
         if ($recurrence === null || $recurrence < 1) {
@@ -200,7 +197,7 @@ class JobManager
         }
 
         $newTime = $job->getTimestamp() + $recurrence;
-        $newJob = new Job(null, $newTime, $job->getHook(), $job->getArgs(), $recurrence);
+        $newJob  = new Job(null, $newTime, $job->getHook(), $job->getArgs(), $recurrence);
 
         $this->scheduleJob($newJob);
 
@@ -301,45 +298,45 @@ class JobManager
      *
      * @since [*next-version*]
      *
-     * @param int[]|null  $ids           Optional list of IDs to match only the jobs with any of those IDs.
-     * @param int|null    $time          Optional timestamp to match only jobs scheduled for this time.
-     * @param string|null $hook          Optional hook name to match only jobs scheduled with this hook.
-     * @param array|null  $args          Optional array of hook args to match only jobs with these hook args.
-     * @param int|null    $recurrence    Optional interval time to match only jobs with this recurrence.
-     *                                   Use zero to get jobs that do not repeat.
+     * @param int[]|null  $ids        Optional list of IDs to match only the jobs with any of those IDs.
+     * @param int|null    $time       Optional timestamp to match only jobs scheduled for this time.
+     * @param string|null $hook       Optional hook name to match only jobs scheduled with this hook.
+     * @param array|null  $args       Optional array of hook args to match only jobs with these hook args.
+     * @param int|null    $recurrence Optional interval time to match only jobs with this recurrence.
+     *                                Use zero to get jobs that do not repeat.
      *
      * @return array The build condition
      */
     protected function buildJobCondition($ids = null, $time = null, $hook = null, $args = null, $recurrence = null)
     {
-        $conditionParts = [];
-        $conditionArgs = [];
+        $cParts = [];
+        $cArgs  = [];
 
         if ($ids !== null) {
-            $conditionParts[] = '`id` IN (%s)';
-            $conditionArgs = implode(',', (array) $ids);
+            $cParts[] = '`id` IN (%s)';
+            $cArgs    = implode(',', (array) $ids);
         }
         if ($time !== null) {
-            $conditionParts[] = '`time` = "%s"';
-            $conditionArgs[] = $this->tsToDatabaseDate($time);
+            $cParts[] = '`time` = "%s"';
+            $cArgs[]  = $this->tsToDatabaseDate($time);
         }
         if ($hook !== null) {
-            $conditionParts[] = '`hook` = "%s"';
-            $conditionArgs[] = $hook;
+            $cParts[] = '`hook` = "%s"';
+            $cArgs[]  = $hook;
         }
         if ($args !== null) {
-            $conditionParts[] = '`args` = "%s"';
-            $conditionArgs[] = $this->serializeArgs($args);
+            $cParts[] = '`args` = "%s"';
+            $cArgs[]  = $this->serializeArgs($args);
         }
         if ($recurrence !== null) {
-            $conditionParts[] = ($recurrence === 0)
+            $cParts[] = ($recurrence === 0)
                 ? '`recurrence` IS NULL'
                 : '`recurrence` === %d';
-            $conditionArgs[] = $recurrence;
+            $cArgs[] = $recurrence;
         }
 
-        $conditionStr = implode(' AND ', $conditionParts);
+        $cStr = implode(' AND ', $cParts);
 
-        return [$conditionStr, $conditionArgs];
+        return [$cStr, $cArgs];
     }
 }

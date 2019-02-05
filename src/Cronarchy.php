@@ -40,7 +40,7 @@ class Cronarchy
     public function __construct(JobManager $manager, DaemonRunner $runner)
     {
         $this->manager = $manager;
-        $this->runner = $runner;
+        $this->runner  = $runner;
     }
 
     /**
@@ -89,16 +89,16 @@ class Cronarchy
      * @param int    $runInterval The max interval, in seconds, between cron runs. Default is 10 seconds.
      * @param int    $maxRunTime  The max time, in seconds, that a single job can run for. Default is 10 minutes.
      *
-     * @return Cronarchy The created instance.
-     *
      * @throws Exception If an error occurs.
+     *
+     * @return Cronarchy The created instance.
      */
     public static function setup($instanceId, $daemonUrl, $runInterval = 10, $maxRunTime = 600)
     {
         global $wpdb;
 
         $jobsTableName = sprintf('%s_jobs', $instanceId);
-        $jobsTable = new Table(
+        $jobsTable     = new Table(
             $wpdb,
             $jobsTableName,
             'CREATE TABLE IF NOT EXISTS `{{table}}` (
@@ -113,9 +113,9 @@ class Cronarchy
         $jobsTable->init();
         $manager = new JobManager($instanceId, $jobsTable);
 
-        $filter = sprintf('cronarchy_get_%s_instance', $instanceId);
+        $filter       = sprintf('cronarchy_get_%s_instance', $instanceId);
         $optionPrefix = sprintf('%s_', $instanceId);
-        $runner = new DaemonRunner($daemonUrl, $filter, $optionPrefix, $runInterval, $maxRunTime);
+        $runner       = new DaemonRunner($daemonUrl, $filter, $optionPrefix, $runInterval, $maxRunTime);
 
         $instance = new self($manager, $runner);
 

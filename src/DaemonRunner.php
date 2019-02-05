@@ -141,12 +141,12 @@ class DaemonRunner
         $maxRunTime = 600,
         $pingSelf = false
     ) {
-        $this->daemonUrl = $daemonUrl;
-        $this->filter = $filter;
+        $this->daemonUrl    = $daemonUrl;
+        $this->filter       = $filter;
         $this->optionPrefix = $optionPrefix;
-        $this->runInterval = $runInterval;
-        $this->maxRunTime = $maxRunTime;
-        $this->pingSelf = $pingSelf;
+        $this->runInterval  = $runInterval;
+        $this->maxRunTime   = $maxRunTime;
+        $this->pingSelf     = $pingSelf;
     }
 
     /**
@@ -269,10 +269,10 @@ class DaemonRunner
      */
     protected function canRunDaemon()
     {
-        $seconds = static::getSecondsSinceLastRun();
+        $seconds   = static::getSecondsSinceLastRun();
         $isRunning = $this->getState() > static::STATE_IDLE;
-        $tooSoon = $seconds <= $this->runInterval;
-        $stuck = $seconds >= $this->maxRunTime && !$this->pingSelf;
+        $tooSoon   = $seconds <= $this->runInterval;
+        $stuck     = $seconds >= $this->maxRunTime && !$this->pingSelf;
 
         return (!$isRunning && !$tooSoon) || ($isRunning && $stuck);
     }
@@ -284,7 +284,7 @@ class DaemonRunner
      */
     public function runDaemon()
     {
-        $doingCron = defined('DOING_CRON') && DOING_CRON;
+        $doingCron     = defined('DOING_CRON') && DOING_CRON;
         $daemonRunSelf = $doingCron && $this->pingSelf;
 
         if (!$this->canRunDaemon() && !$daemonRunSelf) {
@@ -294,22 +294,22 @@ class DaemonRunner
         $this->setState(static::STATE_PREPARING);
 
         session_start();
-        $sessId = session_id();
+        $sessId                               = session_id();
         $_SESSION[static::SESSION_WP_DIR_KEY] = ABSPATH;
         $_SESSION[static::SESSION_FILTER_KEY] = $this->filter;
         session_commit();
 
         $cookie = new WP_Http_Cookie([
-            'name' => 'PHPSESSID',
-            'value' => $sessId,
+            'name'    => 'PHPSESSID',
+            'value'   => $sessId,
             'expires' => time() + 86400,
         ], site_url());
 
         wp_remote_post($this->daemonUrl, [
             'blocking' => false,
-            'timeout' => 1,
-            'cookies' => [$cookie],
-            'body' => [
+            'timeout'  => 1,
+            'cookies'  => [$cookie],
+            'body'     => [
             ],
         ]);
     }

@@ -52,8 +52,8 @@ class Table
      */
     public function __construct(wpdb $wpdb, $name, $createSql)
     {
-        $this->wpdb = $wpdb;
-        $this->name = $wpdb->base_prefix . $name;
+        $this->wpdb      = $wpdb;
+        $this->name      = $wpdb->base_prefix . $name;
         $this->createSql = $createSql;
     }
 
@@ -89,14 +89,14 @@ class Table
      * @param string $query The SQL query string.
      * @param array  $vargs Optional interpolation arguments for $query.
      *
-     * @return int The number of affected rows.
-     *
      * @throws Exception If an error occurred.
+     *
+     * @return int The number of affected rows.
      */
     public function query($query, $vargs = [])
     {
         $prepared = vsprintf($query, $this->escapeArgs($vargs));
-        $numRows = $this->wpdb->query($prepared);
+        $numRows  = $this->wpdb->query($prepared);
 
         if ($numRows !== false) {
             return $numRows;
@@ -113,9 +113,9 @@ class Table
      * @param string $condition Optional WHERE condition string.
      * @param array  $vargs     Optional interpolation arguments for $condition.
      *
-     * @return object[] A numeric array of fetched records, each as an object.
-     *
      * @throws Exception If an error occurred.
+     *
+     * @return object[] A numeric array of fetched records, each as an object.
      */
     public function fetch($condition = '', $vargs = [])
     {
@@ -140,9 +140,9 @@ class Table
      * @param array $formats An array of data formats that correspond to each of $data's entries, as either "%d", "%f"
      *                       or "%s" for numeric, floating point or string.
      *
-     * @return int The number of affected rows.
-     *
      * @throws Exception If an error occurred.
+     *
+     * @return int The number of affected rows.
      */
     public function insert($data, $formats = [])
     {
@@ -166,14 +166,14 @@ class Table
      * @param string|null $condition Optional WHERE condition string.
      * @param array       $vargs     Optional interpolation arguments for $condition.
      *
-     * @return int The number of affected rows.
-     *
      * @throws Exception If an error occurred.
+     *
+     * @return int The number of affected rows.
      */
     public function update($data, $formats = [], $condition = null, $vargs = [])
     {
         $fields = $this->buildUpdateFields($data, $formats);
-        $where = $this->buildWhere($condition, $vargs);
+        $where  = $this->buildWhere($condition, $vargs);
 
         $query = "UPDATE `{$this->name}` SET $fields $where;";
 
@@ -188,9 +188,9 @@ class Table
      * @param string $condition Optional WHERE condition string.
      * @param array  $vargs     Optional interpolation arguments for $condition.
      *
-     * @return int The number of deleted records.
-     *
      * @throws Exception If an error occurred.
+     *
+     * @return int The number of deleted records.
      */
     public function delete($condition, $vargs = [])
     {

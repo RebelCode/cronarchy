@@ -73,7 +73,6 @@ $runner->setState($runner::STATE_RUNNING);
 try {
     // Iterate all pending jobs
     foreach ($manager->getPendingJobs() as $job) {
-        $jobId = $job->getId();
         try {
             // Run the job
             $job->run();
@@ -82,9 +81,9 @@ try {
             continue;
         }
         // Schedule the next recurrence if applicable
-        $manager->scheduleJobRecurrence($jobId);
+        $manager->scheduleJobRecurrence($job);
         // Delete the run job
-        $manager->deleteJobs([$jobId]);
+        $manager->deleteJobs([$job->getId()]);
     }
 } catch (Exception $outerException) {
     // Stop

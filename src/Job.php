@@ -68,10 +68,10 @@ class Job
      */
     public function __construct($id, $timestamp, $hook, $args, $recurrence = null)
     {
-        $this->id = $id;
-        $this->timestamp = $timestamp;
-        $this->hook = $hook;
-        $this->args = $args;
+        $this->id         = $id;
+        $this->timestamp  = $timestamp;
+        $this->hook       = $hook;
+        $this->args       = $args;
         $this->recurrence = $recurrence;
     }
 
