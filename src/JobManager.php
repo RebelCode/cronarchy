@@ -103,7 +103,7 @@ class JobManager
      */
     public function getJobs($time = null, $hook = null, $args = null, $recurrence = null)
     {
-        list($condition, $conditionArgs) = $this->buildJobCondition($time,$hook, $args, $recurrence);
+        list($condition, $conditionArgs) = $this->buildJobCondition(null, $time, $hook, $args, $recurrence);
 
         $records = $this->jobsTable->fetch($condition, $conditionArgs);
         $jobs = array_map([$this, 'createJobFromRecord'], $records);
@@ -299,6 +299,7 @@ class JobManager
      *
      * @since [*next-version*]
      *
+     * @param int|null    $id         Optional ID to match only the job with this ID.
      * @param int|null    $time       Optional timestamp to match only jobs scheduled for this time.
      * @param string|null $hook       Optional hook name to match only jobs scheduled with this hook.
      * @param array|null  $args       Optional array of hook args to match only jobs with these hook args.
@@ -307,11 +308,15 @@ class JobManager
      *
      * @return array The build condition
      */
-    protected function buildJobCondition($time = null, $hook = null, $args = null, $recurrence = null)
+    protected function buildJobCondition($id = null, $time = null, $hook = null, $args = null, $recurrence = null)
     {
         $conditionParts = [];
         $conditionArgs = [];
 
+        if ($id !== null) {
+            $conditionParts[] = '`id` = "%d"';
+            $conditionArgs = $id;
+        }
         if ($time !== null) {
             $conditionParts[] = '`time` = "%s"';
             $conditionArgs[] = $this->tsToDatabaseDate($time);
