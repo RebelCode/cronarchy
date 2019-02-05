@@ -208,21 +208,24 @@ class JobManager
     }
 
     /**
-     * Deletes a job from the database.
+     * Deletes jobs from the database.
      *
      * @since [*next-version*]
      *
-     * @param int $id The job ID.
+     * @param int[]|null  $ids        Optional list of IDs to delete only jobs with any of those IDs.
+     * @param int|null    $time       Optional timestamp to delete only jobs scheduled for this time.
+     * @param string|null $hook       Optional hook name to delete only jobs scheduled with this hook.
+     * @param array|null  $args       Optional array of hook args to delete only jobs with these hook args.
+     * @param int|null    $recurrence Optional interval time to delete only jobs with this recurrence.
+     *                                Use zero to get jobs that do not repeat.
      *
-     * @throws OutOfRangeException If no job exists in the database with the given ID.
      * @throws Exception If an error occurred while deleting the job in the database.
      */
-    public function deleteJob($id)
+    public function deleteJob($ids = null, $time = null, $hook = null, $args = null, $recurrence = null)
     {
-        // To check if job exists and throw OutOfRangeException if not
-        $this->getJob($id);
+        list($condition, $conditionArgs) = $this->buildJobCondition($ids, $time, $hook, $args, $recurrence);
 
-        $this->jobsTable->delete('`id` = %d', [$id]);
+        $this->jobsTable->delete($condition, $conditionArgs);
     }
 
     /**
