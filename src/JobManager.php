@@ -103,29 +103,8 @@ class JobManager
      */
     public function getJobs($time = null, $hook = null, $args = null, $recurrence = null)
     {
-        $conditionParts = [];
-        $conditionArgs = [];
+        list($condition, $conditionArgs) = $this->buildJobCondition($time,$hook, $args, $recurrence);
 
-        if ($time !== null) {
-            $conditionParts[] = '`time` = "%s"';
-            $conditionArgs[] = $this->tsToDatabaseDate($time);
-        }
-        if ($hook !== null) {
-            $conditionParts[] = '`hook` = "%s"';
-            $conditionArgs[] = $hook;
-        }
-        if ($args !== null) {
-            $conditionParts[] = '`args` = "%s"';
-            $conditionArgs[] = $this->serializeArgs($args);
-        }
-        if ($recurrence !== null) {
-            $conditionParts[] = ($recurrence === 0)
-                ? '`recurrence` IS NULL'
-                : '`recurrence` === %d';
-            $conditionArgs[] = $recurrence;
-        }
-
-        $condition = implode(' AND ', $conditionParts);
         $records = $this->jobsTable->fetch($condition, $conditionArgs);
         $jobs = array_map([$this, 'createJobFromRecord'], $records);
 
@@ -313,5 +292,47 @@ class JobManager
     protected function tsToDatabaseDate($timestamp)
     {
         return gmdate('Y-m-d H:i:s', $timestamp);
+    }
+
+    /**
+     * Builds a condition to match jobs based on a combination of their properties.
+     *
+     * @since [*next-version*]
+     *
+     * @param int|null    $time       Optional timestamp to match only jobs scheduled for this time.
+     * @param string|null $hook       Optional hook name to match only jobs scheduled with this hook.
+     * @param array|null  $args       Optional array of hook args to match only jobs with these hook args.
+     * @param int|null    $recurrence Optional interval time to match only jobs with this recurrence.
+     *                                Use zero to get jobs that do not repeat.
+     *
+     * @return array The build condition
+     */
+    protected function buildJobCondition($time = null, $hook = null, $args = null, $recurrence = null)
+    {
+        $conditionParts = [];
+        $conditionArgs = [];
+
+        if ($time !== null) {
+            $conditionParts[] = '`time` = "%s"';
+            $conditionArgs[] = $this->tsToDatabaseDate($time);
+        }
+        if ($hook !== null) {
+            $conditionParts[] = '`hook` = "%s"';
+            $conditionArgs[] = $hook;
+        }
+        if ($args !== null) {
+            $conditionParts[] = '`args` = "%s"';
+            $conditionArgs[] = $this->serializeArgs($args);
+        }
+        if ($recurrence !== null) {
+            $conditionParts[] = ($recurrence === 0)
+                ? '`recurrence` IS NULL'
+                : '`recurrence` === %d';
+            $conditionArgs[] = $recurrence;
+        }
+
+        $conditionStr = implode(' AND ', $conditionParts);
+
+        return [$conditionStr, $conditionArgs];
     }
 }
