@@ -2,6 +2,7 @@
 
 namespace RebelCode\Cronarchy;
 
+use Exception;
 use WP_Http_Cookie;
 
 /**
