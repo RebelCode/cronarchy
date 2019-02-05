@@ -3,6 +3,14 @@
 use RebelCode\Cronarchy\Cronarchy;
 use RebelCode\Cronarchy\DaemonRunner;
 
+if (!defined('CRONARCHY_DAEMON_LOG')) {
+    define('CRONARCHY_DAEMON_LOG', false);
+}
+
+if (!defined('CRONARCHY_DAEMON_LOG_FILE')) {
+    define('CRONARCHY_DAEMON_LOG_FILE', __DIR__ . '/cronarchy_log.txt');
+}
+
 /**
  * Performs clean up and finalization.
  *
@@ -37,11 +45,16 @@ function cronarchyLog($text, $modIndent = 0)
 {
     static $indent = 0;
 
+    if (!CRONARCHY_DAEMON_LOG) {
+        return;
+    }
+
     if ($text !== null) {
         $date = date('D, d M Y - H:i:s');
         $indentStr = str_repeat(' ', $indent * 2);
         $message = sprintf('[%s] %s%s' . PHP_EOL, $date, $indentStr, $text);
-        file_put_contents(__DIR__ . '/cronarchy_log.txt', $message, FILE_APPEND);
+
+        file_put_contents(CRONARCHY_DAEMON_LOG_FILE, $message, FILE_APPEND);
     }
 
     $indent += $modIndent;
