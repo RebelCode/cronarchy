@@ -73,7 +73,7 @@ class JobManager
      */
     public function getJob($id, $time = null, $hook = null, $args = null, $recurrence = null)
     {
-        $ids  = ($id === null) ? [] : [$id];
+        $ids  = ($id === null) ? null : [$id];
         $rows = $this->getJobs($ids, $time, $hook, $args, $recurrence);
 
         if (count($rows) === 0) {
@@ -314,7 +314,7 @@ class JobManager
 
         if ($ids !== null) {
             $cParts[] = '`id` IN (%s)';
-            $cArgs    = implode(',', (array) $ids);
+            $cArgs[]  = implode(',', (array) $ids);
         }
         if ($time !== null) {
             $cParts[] = '`time` = "%s"';
