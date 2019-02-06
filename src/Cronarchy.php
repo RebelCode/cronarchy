@@ -2,6 +2,7 @@
 
 namespace RebelCode\Cronarchy;
 
+use DateTime;
 use Exception;
 
 /**
@@ -111,6 +112,7 @@ class Cronarchy
             ) ENGINE=InnoDB;'
         );
         $jobsTable->init();
+        $jobsTable->query("SET time_zone='%s';", static::getJobsTableTimezone());
         $manager = new JobManager($instanceId, $jobsTable);
 
         $filter       = sprintf('cronarchy_get_%s_instance', $instanceId);
@@ -124,5 +126,27 @@ class Cronarchy
         });
 
         return $instance;
+    }
+
+    /**
+     * Retrieves the timezone to use for the jobs table.
+     *
+     * @since [*next-version*]
+     *
+     * @return string The MySQL timezone offset string.
+     *
+     * @throws Exception In case of an error.
+     */
+    protected static function getJobsTableTimezone()
+    {
+        $now = new DateTime();
+
+        $offset  = (int) $now->getOffset();
+        $seconds = (int) abs($offset);
+        $sign    = $seconds / $offset;
+        $hours   = (int) floor($seconds / 3600.0);
+        $minutes = ($seconds / 60) - ($hours * 60);
+
+        return sprintf('%+d:%02d', $hours*$sign, $minutes);
     }
 }
