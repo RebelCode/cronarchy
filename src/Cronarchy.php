@@ -87,6 +87,7 @@ class Cronarchy
      *
      * @param string $instanceId  An ID for the instance. Must be unique site-wide.
      * @param string $daemonUrl   The absolute URL to the daemon file.
+     * @param string $filter      The name of the WordPress filter to use to provide the instance to the daemon.
      * @param int    $runInterval The max interval, in seconds, between cron runs. Default is 10 seconds.
      * @param int    $maxRunTime  The max time, in seconds, that a single job can run for. Default is 10 minutes.
      *
@@ -94,7 +95,7 @@ class Cronarchy
      *
      * @return Cronarchy The created instance.
      */
-    public static function setup($instanceId, $daemonUrl, $runInterval = 10, $maxRunTime = 600)
+    public static function setup($instanceId, $daemonUrl, $filter, $runInterval = 10, $maxRunTime = 600)
     {
         global $wpdb;
 
@@ -115,7 +116,6 @@ class Cronarchy
         $jobsTable->query("SET time_zone='%s';", static::getJobsTableTimezone());
         $manager = new JobManager($instanceId, $jobsTable);
 
-        $filter       = sprintf('cronarchy_get_%s_instance', $instanceId);
         $optionPrefix = sprintf('%s_', $instanceId);
         $runner       = new DaemonRunner($daemonUrl, $filter, $optionPrefix, $runInterval, $maxRunTime);
 
@@ -133,9 +133,9 @@ class Cronarchy
      *
      * @since [*next-version*]
      *
-     * @return string The MySQL timezone offset string.
-     *
      * @throws Exception In case of an error.
+     *
+     * @return string The MySQL timezone offset string.
      */
     protected static function getJobsTableTimezone()
     {
@@ -147,6 +147,6 @@ class Cronarchy
         $hours   = (int) floor($seconds / 3600.0);
         $minutes = ($seconds / 60) - ($hours * 60);
 
-        return sprintf('%+d:%02d', $hours*$sign, $minutes);
+        return sprintf('%+d:%02d', $hours * $sign, $minutes);
     }
 }
