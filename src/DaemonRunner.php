@@ -2,9 +2,6 @@
 
 namespace RebelCode\Cronarchy;
 
-use Exception;
-use WP_Http_Cookie;
-
 /**
  * The daemon runner class.
  *
@@ -50,20 +47,6 @@ class DaemonRunner
     const LAST_RUN_OPTION_SUFFIX = 'cronarchy_last_run';
 
     /**
-     * The key in the session where the WordPress directory path is stored.
-     *
-     * @since [*next-version*]
-     */
-    const SESSION_WP_DIR_KEY = 'cronarchy_wp_dir';
-
-    /**
-     * The key in the session where the instance filter is stored.
-     *
-     * @since [*next-version*]
-     */
-    const SESSION_FILTER_KEY = 'cronarchy_filter';
-
-    /**
      * The absolute URL to the daemon script.
      *
      * @since [*next-version*]
@@ -71,15 +54,6 @@ class DaemonRunner
      * @var string
      */
     protected $daemonUrl;
-
-    /**
-     * The name of the filter to use to retrieve the cronarchy instance.
-     *
-     * @since [*next-version*]
-     *
-     * @var string
-     */
-    protected $filter;
 
     /**
      * The prefix to use for options in the wp_options table.
@@ -126,7 +100,6 @@ class DaemonRunner
      * @since [*next-version*]
      *
      * @param string $daemonUrl    The absolute URL to the daemon script.
-     * @param string $filter       The name of the filter to use to retrieve the cronarchy instance.
      * @param string $optionPrefix The prefix to use for options in the wp_options table.
      * @param int    $runInterval  The maximum amount of time, in seconds, that need to elapse before the daemon can
      *                             run again.
@@ -136,14 +109,12 @@ class DaemonRunner
      */
     public function __construct(
         $daemonUrl,
-        $filter,
         $optionPrefix = '',
         $runInterval = 10,
         $maxRunTime = 600,
         $pingSelf = false
     ) {
         $this->daemonUrl    = $daemonUrl;
-        $this->filter       = $filter;
         $this->optionPrefix = $optionPrefix;
         $this->runInterval  = $runInterval;
         $this->maxRunTime   = $maxRunTime;
@@ -294,22 +265,9 @@ class DaemonRunner
 
         $this->setState(static::STATE_PREPARING);
 
-        session_start();
-        $sessId                               = session_id();
-        $_SESSION[static::SESSION_WP_DIR_KEY] = ABSPATH;
-        $_SESSION[static::SESSION_FILTER_KEY] = $this->filter;
-        session_commit();
-
-        $cookie = new WP_Http_Cookie([
-            'name'    => 'PHPSESSID',
-            'value'   => $sessId,
-            'expires' => time() + 86400,
-        ], site_url());
-
         wp_remote_post($this->daemonUrl, [
             'blocking' => false,
             'timeout'  => 1,
-            'cookies'  => [$cookie],
             'body'     => [
             ],
         ]);
