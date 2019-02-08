@@ -155,19 +155,9 @@ class JobManager
             'recurrence' => '%d',
         ];
 
-        $id     = $job->getId();
-        $exists = false;
+        $id = $job->getId();
 
-        if ($id !== null) {
-            try {
-                $this->getJob($id);
-                $exists = true;
-            } catch (OutOfRangeException $exception) {
-                // Ignore exception
-            }
-        }
-
-        if (!$exists) {
+        if ($id === null) {
             return $this->jobsTable->insert($data, $formats);
         }
 
