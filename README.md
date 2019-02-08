@@ -30,16 +30,15 @@ So we built Cronarchy. Here are some of the reasons why we think you should give
 * PHP >= 5.4.0
 * WordPress >= 4.7
 
-# Installation
-
-Check out the **[Installation][wiki-install]** wiki page for instructions on how to install and set up Cronarchy in your plugin or theme.
-
 # Links
 
-* [Wiki]
+* [Wiki][wiki]
+* [Installation & Setup][wiki-install]
+* [API Documentation][wiki-api]
 * [Cavalcade] by [Human Made][humanmade]
 
 [cavalcade]: https://github.com/humanmade/cavalcade
 [humanmade]: https://github.com/humanmade/cavalcade
 [wiki]: https://github.com/RebelCode/cronarchy/wiki
-[wiki-install]: https://github.com/RebelCode/cronarchy/wiki/Installation
+[wiki-install]: https://github.com/RebelCode/cronarchy/wiki/Installation-&-Setup
+[wiki-api]: https://github.com/RebelCode/cronarchy/wiki/API-Documentation
