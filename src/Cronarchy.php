@@ -113,7 +113,7 @@ class Cronarchy
             ) ENGINE=InnoDB;'
         );
         $jobsTable->init();
-        $jobsTable->query("SET time_zone='%s';", static::getJobsTableTimezone());
+        $jobsTable->query("SET time_zone='%s';", [static::getJobsTableTimezone()]);
         $manager = new JobManager($instanceId, $jobsTable);
 
         $optionPrefix = sprintf('%s_', $instanceId);
