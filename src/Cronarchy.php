@@ -143,7 +143,7 @@ class Cronarchy
 
         $offset  = (int) $now->getOffset();
         $seconds = (int) abs($offset);
-        $sign    = $seconds / $offset;
+        $sign    = $offset < 0 ? -1 : 1;
         $hours   = (int) floor($seconds / 3600.0);
         $minutes = ($seconds / 60) - ($hours * 60);
 
