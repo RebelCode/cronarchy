@@ -12,6 +12,34 @@ use Exception;
 class Daemon
 {
     /**
+     * The config key for enabling/disabling logging.
+     *
+     * @since [*next-version*]
+     */
+    const ENABLE_LOGGING = 'enable_logging';
+
+    /**
+     * The config key for specifying the path of the log file to write logs to.
+     *
+     * @since [*next-version*]
+     */
+    const LOG_FILE_PATH = 'log_file_path';
+
+    /**
+     * The config key for maximum number of directories to search in when locating WordPress.
+     *
+     * @since [*next-version*]
+     */
+    const MAX_DIR_SEARCH = 'max_dir_search';
+
+    /**
+     * The config key for enabling or disabling the deletion of failed jobs.
+     *
+     * @since [*next-version*]
+     */
+    const DELETE_FAILED_JOBS = 'delete_failed_jobs';
+
+    /**
      * The cronarchy instance.
      *
      * @since [*next-version*]
@@ -48,68 +76,32 @@ class Daemon
     protected $callerDir;
 
     /**
-     * Whether or not to enable logging.
+     * The daemon's configuration.
      *
      * @since [*next-version*]
      *
-     * @var bool
+     * @var array
      */
-    protected $logging;
-
-    /**
-     * The path to the log file.
-     *
-     * @since [*next-version*]
-     *
-     * @var string
-     */
-    protected $logFile;
-
-    /**
-     * The max number of directories to search for when trying to locate WordPress.
-     *
-     * @since [*next-version*]
-     *
-     * @var int
-     */
-    protected $wpMaxDirSearch;
-
-    /**
-     * Whether or not to ignore failed jobs by removing them from the database.
-     *
-     * @since [*next-version*]
-     *
-     * @var bool
-     */
-    protected $ignoreFailedJobs;
+    protected $config;
 
     /**
      * Constructor.
      *
      * @since [*next-version*]
      *
-     * @param string $instanceId       The ID of the {@link Cronarchy} instance to use.
-     * @param string $callerDir        The directory of the caller, i.e. the daemon entry script.
-     * @param bool   $log              Whether or not to enable logging.
-     * @param string $logFile          The path to the log file.
-     * @param int    $wpMaxDirSearch   The max number of directories to search for when trying to locate WordPress.
-     * @param bool   $ignoreFailedJobs Whether or not to ignore failed jobs by removing them from the database.
+     * @param string $instanceId The ID of the {@link Cronarchy} instance to use.
+     * @param string $callerDir  The directory of the caller, i.e. the daemon entry script.
+     * @param array  $config     The daemon's configuration.
      */
     public function __construct(
         $instanceId,
         $callerDir,
-        $log = false,
-        $logFile = null,
-        $wpMaxDirSearch = null,
-        $ignoreFailedJobs = false
+        $config = []
     ) {
         $this->instanceId = (string) $instanceId;
         $this->callerDir = $callerDir;
         $this->instanceId = $instanceId;
-        $this->logging = $log;
-        $this->logFile = $logFile;
-        $this->wpMaxDirSearch = $wpMaxDirSearch;
-        $this->ignoreFailedJobs = $ignoreFailedJobs;
+        $this->config = $config;
     }
 
     /**
@@ -175,30 +167,10 @@ class Daemon
             exit;
         }
 
-        $this->callerDir = realpath($this->callerDir);
-        $this->callerDir = empty($currDir)
-            ? __DIR__
-            : $currDir;
+        $this->config = array_merge($this->getDefaultConfig(), $this->config);
 
-        $this->logging = filter_var($this->logging, FILTER_VALIDATE_BOOLEAN);
-
-        $this->logFile = empty($this->logFile)
-            ? $this->callerDir . '/cronarchy-log.txt'
-            : $this->logFile;
-
-        $this->wpMaxDirSearch = filter_var($this->wpMaxDirSearch, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
-        $this->wpMaxDirSearch = empty($this->wpMaxDirSearch)
-            ? 10
-            : $this->wpMaxDirSearch;
-
-        $this->ignoreFailedJobs = filter_var($this->ignoreFailedJobs, FILTER_VALIDATE_BOOLEAN);
-
-        $this->log('Current working dir = ' . $this->callerDir);
-        $this->log('Logging = ' . ($this->logging ? 'on' : 'off'));
-        $this->log('Log file = ' . $this->logFile);
-        $this->log('Max dir search = ' . $this->wpMaxDirSearch);
-        $this->log('Ignore failed jobs = ' . ($this->ignoreFailedJobs ? 'on' : 'off'));
-        $this->log(null, -1);
+        $this->log('Config:', 1);
+        $this->log(print_r($this->config, true), -1);
     }
 
     /**
@@ -237,39 +209,62 @@ class Daemon
      */
     public function findWordPress()
     {
-        // The different directory structures to cater for, as a list of directory names
-        // where the wp-load.php file can be found, relative to the root (ABSPATH).
+        $dirCount = 0;
+        $maxCount = $this->config[static::MAX_DIR_SEARCH];
+        $directory = $this->callerDir;
+
+        do {
+            $this->log(sprintf('Searching in "%s"', $directory));
+            $wpLoadFile = $this->findWordPressFromDirectory($directory);
+
+            if ($wpLoadFile !== null) {
+                $this->log(sprintf('Found WordPress: "%s"', $wpLoadFile));
+
+                return $wpLoadFile;
+            }
+
+            $directory = realpath($directory . '/..');
+            $dirCount++;
+        } while (is_dir($directory) && $dirCount < $maxCount);
+
+        $this->log('Could not find WordPress manually');
+
+        return null;
+    }
+
+    /**
+     * Searches for WordPress from a specific directory, testing various different known installation types.
+     *
+     * @since [*next-version*]
+     *
+     * @param string $directory The path of the directory to search in.
+     *
+     * @return string|null The path to the WordPress `wp-load.php` file, or null if not found.
+     */
+    protected function findWordPressFromDirectory($directory)
+    {
+        // The list of directory structures to search in, relative to the root (ABSPATH).
         static $cDirTypes = [
             '',    // Vanilla installations
             '/wp', // Bedrock installations
         ];
 
-        $dirCount = 0;
-        $directory = $this->callerDir;
+        foreach ($cDirTypes as $_suffix) {
+            $subDirectory = realpath($directory . $_suffix);
 
-        do {
-            foreach ($cDirTypes as $_suffix) {
-                $subDirectory = realpath($directory . $_suffix);
-                if (empty($subDirectory)) {
-                    continue;
-                }
-
-                $this->log(sprintf('Searching in "%s"', $subDirectory));
-
-                if (is_readable($wpLoadFile = $subDirectory . '/wp-load.php')) {
-                    $this->log(sprintf('Found WordPress at "%s"', $subDirectory));
-
-                    return $wpLoadFile;
-                }
+            if (empty($subDirectory)) {
+                continue;
             }
 
-            $directory = realpath($directory . '/..');
-            if (++$dirCount > $this->wpMaxDirSearch) {
-                break;
-            }
-        } while (is_dir($directory));
+            $this->log(sprintf('Searching in "%s"', $subDirectory));
+            $wpLoadFile = $subDirectory . '/wp-load.php';
 
-        $this->log('Could not find WordPress manually');
+            if (is_readable($wpLoadFile)) {
+                $this->log(sprintf('Found WordPress at "%s"', $subDirectory));
+
+                return $wpLoadFile;
+            }
+        }
 
         return null;
     }
@@ -332,47 +327,58 @@ class Daemon
 
             $this->log('Running jobs ...', 1);
 
-            // Iterate all pending jobs
-            foreach ($pendingJobs as $_job) {
-                $job = $_job;
-                $this->log(sprintf('Retrieved job `%s`', $job->getHook()), 1);
-
-                try {
-                    $this->log('Running ... ', 0, false);
-                    $job->run();
-                    $this->log('done!');
-                } catch (Exception $innerException) {
-                    $this->log('error:', 1);
-                    $this->log($innerException->getMessage(), -1);
-
-                    if (!$this->ignoreFailedJobs) {
-                        $this->log('This job will remain in the database to be re-run later', -1);
-                        continue;
-                    }
-
-                    $this->log(null, -1);
-                }
-
-                // Schedule the next recurrence if applicable
-                $newJob = $manager->scheduleJobRecurrence($job);
-                if ($newJob !== null) {
-                    $newJobDate = gmdate('H:i:s, jS M Y', $newJob->getTimestamp());
-                    $this->log(sprintf('Scheduled next occurrence to run at %s', $newJobDate));
-                }
-
-                // Delete the run job
-                $this->log('Removing this job from the database ...');
-                $manager->deleteJobs([$job->getId()]);
-
-                $this->log(null, -1);
+            foreach ($pendingJobs as $job) {
+                $this->currentJob = $job;
+                $this->runJob($job, $manager);
+                $this->currentJob = null;
             }
-            $job = null;
-        } catch (Exception $outerException) {
-            $this->log('Failed to run all jobs:', 1);
-            $this->log($outerException->getMessage(), -1);
+
+            $this->log(null, -1);
+        } catch (Exception $exception) {
+            $this->log('Exception: ' . $exception->getMessage());
         }
 
         $this->log('All pending jobs have been run successfully!');
+    }
+
+    /**
+     * Runs a single job.
+     *
+     * @since [*next-version*]
+     *
+     * @param Job        $job     The job to run.
+     * @param JobManager $manager The manager to use to schedule recurrences.
+     *
+     * @throws Exception If failed to schedule the job recurrence or delete the job.
+     */
+    protected function runJob(Job $job, JobManager $manager)
+    {
+        try {
+            $this->log(sprintf('Running job with hook `%s`... ', $job->getHook()), 0, false);
+            $job->run();
+            $this->log('done!');
+        } catch (Exception $exception) {
+            $this->log('error!', 1);
+
+            if (!$this->config[static::DELETE_FAILED_JOBS]) {
+                $this->log('This job will remain in the database to be re-run later');
+
+                return;
+            }
+
+            $this->log($exception->getMessage(), -1);
+        }
+
+        // Schedule the next recurrence if applicable
+        $newJob = $manager->scheduleJobRecurrence($job);
+        if ($newJob !== null) {
+            $newJobDate = gmdate('H:i:s, jS M Y', $newJob->getTimestamp());
+            $this->log(sprintf('Scheduled next occurrence to run at %s', $newJobDate));
+        }
+
+        // Delete the run job
+        $this->log('Removing job from the database ...');
+        $manager->deleteJobs([$job->getId()]);
     }
 
     /**
@@ -423,7 +429,7 @@ class Daemon
         static $indent = 0;
         static $continues = false;
 
-        if (!$this->logging) {
+        if (!$this->config[static::ENABLE_LOGGING]) {
             return;
         }
 
@@ -440,7 +446,7 @@ class Daemon
 
             $message = $prefix . $indentStr . $text . $eolChar;
 
-            file_put_contents($this->logFile, $message, FILE_APPEND);
+            file_put_contents($this->config[static::LOG_FILE_PATH], $message, FILE_APPEND);
         }
 
         $continues = !$endLine;
@@ -474,5 +480,22 @@ class Daemon
 
         $this->log('Exiting ...');
         exit;
+    }
+
+    /**
+     * Retrieves the default config values.
+     *
+     * @since [*next-version*]
+     *
+     * @return array
+     */
+    protected function getDefaultConfig()
+    {
+        return [
+            static::ENABLE_LOGGING => false,
+            static::LOG_FILE_PATH => $this->callerDir . '/cronarchy-log.txt',
+            static::MAX_DIR_SEARCH => 10,
+            static::DELETE_FAILED_JOBS => false,
+        ];
     }
 }
