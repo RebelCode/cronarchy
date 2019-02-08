@@ -20,6 +20,15 @@ class Cronarchy
     const INSTANCE_FILTER = 'get_cronarchy_instance';
 
     /**
+     * The instance ID.
+     *
+     * @since [*next-version*]
+     *
+     * @var int
+     */
+    protected $instanceId;
+
+    /**
      * The job manager instance.
      *
      * @since [*next-version*]
@@ -42,13 +51,25 @@ class Cronarchy
      *
      * @since [*next-version*]
      *
+     * @param string $instanceId The instance ID. Must be unique.
      * @param JobManager   $manager The job manager instance.
      * @param DaemonRunner $runner  The daemon runner instance.
      */
-    public function __construct(JobManager $manager, DaemonRunner $runner)
+    public function __construct($instanceId, JobManager $manager, DaemonRunner $runner)
     {
+        $this->instanceId = $instanceId;
         $this->manager = $manager;
         $this->runner  = $runner;
+    }
+
+    /**
+     * Retrieves the manager instance ID.
+     *
+     * @since [*next-version*]
+     */
+    public function getInstanceId()
+    {
+        return $this->instanceId;
     }
 
     /**
@@ -82,9 +103,19 @@ class Cronarchy
      */
     public function init()
     {
-        if (!(defined('DOING_CRON') && DOING_CRON)) {
-            $this->getRunner()->runDaemon();
-        }
+        add_filter(static::INSTANCE_FILTER, function ($pInstance, $id) {
+            if ($id === $this->instanceId) {
+                return $this;
+            }
+
+            return $pInstance;
+        }, 10, 2);
+
+        add_action('init', function () {
+            if (!(defined('DOING_CRON') && DOING_CRON)) {
+                $this->getRunner()->runDaemon();
+            }
+        });
     }
 
     /**
@@ -105,10 +136,9 @@ class Cronarchy
     {
         global $wpdb;
 
-        $jobsTableName = sprintf('%s_jobs', $instanceId);
-        $jobsTable     = new Table(
+        $jobsTable = new Table(
             $wpdb,
-            $jobsTableName,
+            sprintf('%s_jobs', $instanceId),
             'CREATE TABLE IF NOT EXISTS `{{table}}` (
                 `id` bigint unsigned NOT NULL AUTO_INCREMENT,
                 `hook` varchar(255) NOT NULL,
@@ -120,20 +150,10 @@ class Cronarchy
         );
         $jobsTable->init();
         $jobsTable->query("SET time_zone='%s';", [static::getJobsTableTimezone()]);
-        $manager = new JobManager($instanceId, $jobsTable);
 
-        $optionPrefix = sprintf('%s_', $instanceId);
-        $runner       = new DaemonRunner($daemonUrl, $optionPrefix, $runInterval, $maxRunTime);
-
-        $instance = new self($manager, $runner);
-
-        add_filter(static::INSTANCE_FILTER, function ($pInstance, $id) use ($instance, $instanceId) {
-            if ($id === $instanceId) {
-                return $this;
-            }
-
-            return $pInstance;
-        }, 10, 2);
+        $manager  = new JobManager($instanceId, $jobsTable);
+        $runner   = new DaemonRunner($daemonUrl, "{$instanceId}_", $runInterval, $maxRunTime);
+        $instance = new self($instanceId, $manager, $runner);
 
         return $instance;
     }
