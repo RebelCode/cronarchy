@@ -268,8 +268,7 @@ class DaemonRunner
         wp_remote_post($this->daemonUrl, [
             'blocking' => false,
             'timeout'  => 1,
-            'body'     => [
-            ],
+            'body'     => [],
         ]);
     }
 
