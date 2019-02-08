@@ -13,6 +13,13 @@ use Exception;
 class Cronarchy
 {
     /**
+     * The name of the filter that is used to retrieve instances.
+     *
+     * @since [*next-version*]
+     */
+    const INSTANCE_FILTER = 'get_cronarchy_instance';
+
+    /**
      * The job manager instance.
      *
      * @since [*next-version*]
@@ -87,7 +94,6 @@ class Cronarchy
      *
      * @param string $instanceId  An ID for the instance. Must be unique site-wide.
      * @param string $daemonUrl   The absolute URL to the daemon file.
-     * @param string $filter      The name of the WordPress filter to use to provide the instance to the daemon.
      * @param int    $runInterval The max interval, in seconds, between cron runs. Default is 10 seconds.
      * @param int    $maxRunTime  The max time, in seconds, that a single job can run for. Default is 10 minutes.
      *
@@ -95,7 +101,7 @@ class Cronarchy
      *
      * @return Cronarchy The created instance.
      */
-    public static function setup($instanceId, $daemonUrl, $filter, $runInterval = 10, $maxRunTime = 600)
+    public static function setup($instanceId, $daemonUrl, $runInterval = 10, $maxRunTime = 600)
     {
         global $wpdb;
 
@@ -121,9 +127,13 @@ class Cronarchy
 
         $instance = new self($manager, $runner);
 
-        add_filter($filter, function () use ($instance) {
-            return $instance;
-        });
+        add_filter(static::INSTANCE_FILTER, function ($pInstance, $id) use ($instance, $instanceId) {
+            if ($id === $instanceId) {
+                return $this;
+            }
+
+            return $pInstance;
+        }, 10, 2);
 
         return $instance;
     }

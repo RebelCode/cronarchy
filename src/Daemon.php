@@ -30,13 +30,13 @@ class Daemon
     protected $currentJob = null;
 
     /**
-     * The WordPress filter to use for retrieving the {@link Cronarchy} instance.
+     * The ID of the {@link Cronarchy} instance to use.
      *
      * @since [*next-version*]
      *
      * @var string
      */
-    protected $instanceFilter;
+    protected $instanceId;
 
     /**
      * The directory of the caller, i.e. the daemon entry script.
@@ -88,7 +88,7 @@ class Daemon
      *
      * @since [*next-version*]
      *
-     * @param string $instanceFilter   The WordPress filter to use for retrieving the {@link Cronarchy} instance.
+     * @param string $instanceId       The ID of the {@link Cronarchy} instance to use.
      * @param string $callerDir        The directory of the caller, i.e. the daemon entry script.
      * @param bool   $log              Whether or not to enable logging.
      * @param string $logFile          The path to the log file.
@@ -96,16 +96,16 @@ class Daemon
      * @param bool   $ignoreFailedJobs Whether or not to ignore failed jobs by removing them from the database.
      */
     public function __construct(
-        $instanceFilter,
+        $instanceId,
         $callerDir,
         $log = false,
         $logFile = null,
         $wpMaxDirSearch = null,
         $ignoreFailedJobs = false
     ) {
-        $this->instanceFilter = (string) $instanceFilter;
+        $this->instanceId = (string) $instanceId;
         $this->callerDir = $callerDir;
-        $this->instanceFilter = $instanceFilter;
+        $this->instanceId = $instanceId;
         $this->logging = $log;
         $this->logFile = $logFile;
         $this->wpMaxDirSearch = $wpMaxDirSearch;
@@ -170,8 +170,8 @@ class Daemon
     {
         $this->log('Loading config ...', 1);
 
-        if (empty($this->instanceFilter)) {
-            $this->log('The instance filter is invalid or not set!');
+        if (empty($this->instanceId)) {
+            $this->log('The instance ID is invalid or not set!');
             exit;
         }
 
@@ -284,8 +284,8 @@ class Daemon
         $this->log('Setting up Cronarchy ...', 1);
 
         // Get the instance
-        $this->log('Retrieving instance from filter ...');
-        $this->cronarchy = apply_filters($this->instanceFilter, null);
+        $this->log(sprintf('Retrieving instance "%s" from filter ...', $this->instanceId));
+        $this->cronarchy = apply_filters(Cronarchy::INSTANCE_FILTER, null, $this->instanceId);
 
         if (!$this->cronarchy instanceof Cronarchy) {
             $this->log('Invalid instance retrieved from filter');
