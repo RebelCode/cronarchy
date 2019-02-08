@@ -117,7 +117,7 @@ class Cronarchy
         $manager = new JobManager($instanceId, $jobsTable);
 
         $optionPrefix = sprintf('%s_', $instanceId);
-        $runner       = new DaemonRunner($daemonUrl, $filter, $optionPrefix, $runInterval, $maxRunTime);
+        $runner       = new DaemonRunner($daemonUrl, $optionPrefix, $runInterval, $maxRunTime);
 
         $instance = new self($manager, $runner);
 
