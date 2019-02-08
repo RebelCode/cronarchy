@@ -196,7 +196,7 @@ class JobManager
             return null;
         }
 
-        $newTime = $job->getTimestamp() + $recurrence;
+        $newTime = time() + $recurrence;
         $newJob  = new Job(null, $newTime, $job->getHook(), $job->getArgs(), $recurrence);
 
         $this->scheduleJob($newJob);
