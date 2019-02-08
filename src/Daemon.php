@@ -152,7 +152,7 @@ class Daemon
 
         // Ensure the exit function runs when the script terminates unexpectedly
         $this->log('Registering shutdown function ...');
-        register_shutdown_function('RebelCode\Cronarchy\Daemon\shutdown');
+        register_shutdown_function([$this, 'shutdown']);
 
         // Ensure the exit function runs when the script terminates unexpectedly
         $this->log('Setting PHP to ignore user abortion ...');
