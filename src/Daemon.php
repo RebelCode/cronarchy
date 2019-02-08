@@ -244,22 +244,16 @@ class Daemon
     protected function findWordPressFromDirectory($directory)
     {
         // The list of directory structures to search in, relative to the root (ABSPATH).
-        static $cDirTypes = [
+        $dirTypes = [
             '',    // Vanilla installations
             '/wp', // Bedrock installations
         ];
 
-        foreach ($cDirTypes as $_suffix) {
+        foreach ($dirTypes as $_suffix) {
             $subDirectory = realpath($directory . $_suffix);
-
-            if (empty($subDirectory)) {
-                continue;
-            }
-
-            $this->log(sprintf('Searching in "%s"', $subDirectory));
             $wpLoadFile = $subDirectory . '/wp-load.php';
 
-            if (is_readable($wpLoadFile)) {
+            if (!empty($subDirectory) && is_readable($wpLoadFile)) {
                 $this->log(sprintf('Found WordPress at "%s"', $subDirectory));
 
                 return $wpLoadFile;
