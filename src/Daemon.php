@@ -223,8 +223,8 @@ class Daemon
                 return $wpLoadFile;
             }
 
-            $directory = realpath($directory . '/..');
-            $dirCount++;
+            $directory = realpath($directory.'/..');
+            ++$dirCount;
         } while (is_dir($directory) && $dirCount < $maxCount);
 
         $this->log('Could not find WordPress manually');
@@ -250,8 +250,8 @@ class Daemon
         ];
 
         foreach ($dirTypes as $_suffix) {
-            $subDirectory = realpath($directory . $_suffix);
-            $wpLoadFile = $subDirectory . '/wp-load.php';
+            $subDirectory = realpath($directory.$_suffix);
+            $wpLoadFile = $subDirectory.'/wp-load.php';
 
             if (!empty($subDirectory) && is_readable($wpLoadFile)) {
                 $this->log(sprintf('Found WordPress at "%s"', $subDirectory));
@@ -328,7 +328,7 @@ class Daemon
 
             $this->log(null, -1);
         } catch (Exception $exception) {
-            $this->log('Exception: ' . $exception->getMessage());
+            $this->log('Exception: '.$exception->getMessage());
         }
 
         $this->log('All pending jobs have been run successfully!');
@@ -437,7 +437,7 @@ class Daemon
                 ? PHP_EOL
                 : '';
 
-            $message = $prefix . $indentStr . $text . $eolChar;
+            $message = $prefix.$indentStr.$text.$eolChar;
 
             file_put_contents($this->config[static::LOG_FILE_PATH], $message, FILE_APPEND);
         }
@@ -458,10 +458,10 @@ class Daemon
         if ($this->currentJob instanceof Job) {
             $this->log('', -100);
             $this->log('Daemon script ended unexpectedly while running a job', 1);
-            $this->log('Job ID: ' . $this->currentJob->getId());
-            $this->log('Job hook: ' . $this->currentJob->getHook());
-            $this->log('Job timestamp: ' . $this->currentJob->getTimestamp());
-            $this->log('Job recurrence: ' . $this->currentJob->getRecurrence());
+            $this->log('Job ID: '.$this->currentJob->getId());
+            $this->log('Job hook: '.$this->currentJob->getHook());
+            $this->log('Job timestamp: '.$this->currentJob->getTimestamp());
+            $this->log('Job recurrence: '.$this->currentJob->getRecurrence());
             $this->log(null, -1);
         }
 
@@ -486,7 +486,7 @@ class Daemon
     {
         return [
             static::ENABLE_LOGGING => false,
-            static::LOG_FILE_PATH => $this->callerDir . '/cronarchy-log.txt',
+            static::LOG_FILE_PATH => $this->callerDir.'/cronarchy-log.txt',
             static::MAX_DIR_SEARCH => 10,
             static::DELETE_FAILED_JOBS => false,
         ];

@@ -51,15 +51,15 @@ class Cronarchy
      *
      * @since [*next-version*]
      *
-     * @param string $instanceId The instance ID. Must be unique.
-     * @param JobManager   $manager The job manager instance.
-     * @param DaemonRunner $runner  The daemon runner instance.
+     * @param string       $instanceId The instance ID. Must be unique.
+     * @param JobManager   $manager    The job manager instance.
+     * @param DaemonRunner $runner     The daemon runner instance.
      */
     public function __construct($instanceId, JobManager $manager, DaemonRunner $runner)
     {
         $this->instanceId = $instanceId;
-        $this->manager = $manager;
-        $this->runner  = $runner;
+        $this->manager    = $manager;
+        $this->runner     = $runner;
     }
 
     /**
