@@ -42,7 +42,7 @@ class Cronarchy
      *
      * @since [*next-version*]
      *
-     * @var DaemonRunner
+     * @var Runner
      */
     protected $runner;
 
@@ -51,11 +51,11 @@ class Cronarchy
      *
      * @since [*next-version*]
      *
-     * @param string       $instanceId The instance ID. Must be unique.
-     * @param JobManager   $manager    The job manager instance.
-     * @param DaemonRunner $runner     The daemon runner instance.
+     * @param string     $instanceId The instance ID. Must be unique.
+     * @param JobManager $manager    The job manager instance.
+     * @param Runner     $runner     The daemon runner instance.
      */
-    public function __construct($instanceId, JobManager $manager, DaemonRunner $runner)
+    public function __construct($instanceId, JobManager $manager, Runner $runner)
     {
         $this->instanceId = $instanceId;
         $this->manager    = $manager;
@@ -89,7 +89,7 @@ class Cronarchy
      *
      * @since [*next-version*]
      *
-     * @return DaemonRunner
+     * @return Runner
      */
     public function getRunner()
     {
@@ -152,7 +152,7 @@ class Cronarchy
         $jobsTable->query("SET time_zone='%s';", [static::getJobsTableTimezone()]);
 
         $manager  = new JobManager($instanceId, $jobsTable);
-        $runner   = new DaemonRunner($daemonUrl, "{$instanceId}_", $runInterval, $maxRunTime);
+        $runner   = new Runner($daemonUrl, "{$instanceId}_", $runInterval, $maxRunTime);
         $instance = new self($instanceId, $manager, $runner);
 
         return $instance;

@@ -3,13 +3,13 @@
 namespace RebelCode\Cronarchy;
 
 /**
- * The daemon runner class.
+ * The runner class.
  *
  * This class is responsible for running the daemon script, as well managing its state and configuration.
  *
  * @since [*next-version*]
  */
-class DaemonRunner
+class Runner
 {
     /**
      * State identifier for when the daemon is not running.
