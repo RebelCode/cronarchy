@@ -12,25 +12,39 @@ namespace RebelCode\Cronarchy;
 class DaemonRunner
 {
     /**
-     * State identifier for when the daemon is idle (not running).
+     * State identifier for when the daemon is not running.
      *
      * @since [*next-version*]
      */
-    const STATE_IDLE = 0;
+    const STATE_STOPPED = 0;
 
     /**
-     * State identifier for when the daemon is about to be run by the runner.
+     * State identifier for when the daemon is idle (waiting to ping itself).
      *
      * @since [*next-version*]
      */
-    const STATE_PREPARING = 1;
+    const STATE_IDLE = 1;
 
     /**
-     * State identifier for when the daemon is running.
+     * State identifier for when the daemon is queued to run.
      *
      * @since [*next-version*]
      */
-    const STATE_RUNNING = 2;
+    const STATE_QUEUED = 2;
+
+    /**
+     * State identifier for when the daemon is preparing to run pending jobs.
+     *
+     * @since [*next-version*]
+     */
+    const STATE_PREPARING = 3;
+
+    /**
+     * State identifier for when the daemon is running pending jobs.
+     *
+     * @since [*next-version*]
+     */
+    const STATE_RUNNING = 4;
 
     /**
      * The suffix of the name of the option where the daemon's state is stored.
@@ -38,6 +52,13 @@ class DaemonRunner
      * @since [*next-version*]
      */
     const STATE_OPTION_SUFFIX = 'cronarchy_state';
+
+    /**
+     * The suffix of the name of the option where the timestamp for the last state change is stored.
+     *
+     * @since [*next-version*]
+     */
+    const LAST_STATE_CHANGE_OPTION_SUFFIX = 'cronarchy_last_state_change';
 
     /**
      * The suffix of the name of the option where the daemon's last run timestamp is stored.
@@ -134,6 +155,18 @@ class DaemonRunner
     }
 
     /**
+     * Retrieves the timestamp for when the last state change occurred.
+     *
+     * @since [*next-version*]
+     *
+     * @return int
+     */
+    public function getLastStateChangeTime()
+    {
+        return intval(get_option($this->getLastStateChangeOptionName(), time()));
+    }
+
+    /**
      * Sets the state of the runner.
      *
      * @since [*next-version*]
@@ -143,6 +176,7 @@ class DaemonRunner
     public function setState($state)
     {
         update_option($this->getStateOptionName(), intval($state));
+        update_option($this->getLastStateChangeOptionName(), intval($state));
     }
 
     /**
@@ -179,7 +213,7 @@ class DaemonRunner
      */
     public function getLastRunTime()
     {
-        return get_option($this->getLastRunOptionName(), null);
+        return intval(get_option($this->getLastRunOptionName(), 0));
     }
 
     /**
@@ -211,24 +245,6 @@ class DaemonRunner
     }
 
     /**
-     * Retrieves the number of seconds that have passed since the daemon was last run.
-     *
-     * @since [*next-version*]
-     *
-     * @return int
-     */
-    public function getSecondsSinceLastRun()
-    {
-        $lastRun = $this->getLastRunTime();
-
-        if ($lastRun === null) {
-            return $this->maxRunTime;
-        }
-
-        return time() - intval($lastRun);
-    }
-
-    /**
      * Checks if the daemon can be run.
      *
      * The daemon can run if its not already running or if its not too soon to run again,
@@ -241,12 +257,21 @@ class DaemonRunner
      */
     protected function canRunDaemon()
     {
-        $seconds   = static::getSecondsSinceLastRun();
-        $isRunning = $this->getState() > static::STATE_IDLE;
-        $tooSoon   = $seconds <= $this->runInterval;
-        $stuck     = $seconds >= $this->maxRunTime && !$this->pingSelf;
+        $lastRun = time() - $this->getLastRunTime();
+        $tooSoon = $lastRun <= $this->runInterval;
 
-        return (!$isRunning && !$tooSoon) || ($isRunning && $stuck);
+        if ($tooSoon) {
+            return false;
+        }
+
+        $currentState  = $this->getState();
+        $lastStateTime = time() - $this->getLastStateChangeTime();
+
+        if ($lastStateTime >= $this->maxRunTime && $currentState > static::STATE_IDLE) {
+            return false;
+        }
+
+        return $currentState === static::STATE_IDLE;
     }
 
     /**
@@ -263,7 +288,7 @@ class DaemonRunner
             return;
         }
 
-        $this->setState(static::STATE_PREPARING);
+        $this->setState(static::STATE_QUEUED);
 
         wp_remote_post($this->daemonUrl, [
             'blocking' => false,
@@ -282,6 +307,18 @@ class DaemonRunner
     protected function getStateOptionName()
     {
         return $this->optionPrefix . static::STATE_OPTION_SUFFIX;
+    }
+
+    /**
+     * Retrieves the option name for the last time the state was changed.
+     *
+     * @since [*next-version*]
+     *
+     * @return string
+     */
+    protected function getLastStateChangeOptionName()
+    {
+        return $this->optionPrefix . static::LAST_STATE_CHANGE_OPTION_SUFFIX;
     }
 
     /**

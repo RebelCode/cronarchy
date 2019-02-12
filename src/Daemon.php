@@ -285,8 +285,8 @@ class Daemon
 
         $this->log('Checking Runner state ...');
         // Ensure the runner is not in an idle state
-        if ($runner->getState() < $runner::STATE_PREPARING) {
-            $this->log('Daemon is not in `STATE_PREPARING` state and should not have been executed!');
+        if ($runner->getState() < $runner::STATE_QUEUED) {
+            $this->log('Daemon is not in `STATE_QUEUED` state and should not have been executed!');
             exit;
         }
 
@@ -294,10 +294,6 @@ class Daemon
         $maxRunTime = $runner->getMaxRunTime();
         $this->log(sprintf('Setting max run time to %d seconds', $maxRunTime));
         set_time_limit($maxRunTime);
-
-        $this->log('Updating Runner state to STATE_RUNNING');
-        // Update the runner state to indicate that it is running
-        $runner->setState($runner::STATE_RUNNING);
 
         $this->log(null, -1);
     }
@@ -311,6 +307,7 @@ class Daemon
     {
         try {
             $manager = $this->cronarchy->getManager();
+            $runner = $this->cronarchy->getRunner();
             $pendingJobs = $manager->getPendingJobs();
 
             if (empty($pendingJobs)) {
@@ -319,6 +316,8 @@ class Daemon
                 return;
             }
 
+            // Update the runner state to indicate that it is preparing to run
+            $runner->setState($runner::STATE_RUNNING);
             $this->log('Running jobs ...', 1);
 
             foreach ($pendingJobs as $job) {
@@ -397,9 +396,9 @@ class Daemon
             exit;
         }
 
-        // If runner is set to ping itself, update the state to preparing, wait for next run, then run again
-        $this->log('Updating Runner state to STATE_PREPARING');
-        $runner->setState($runner::STATE_PREPARING);
+        // If runner is set to ping itself, update the state to idle, wait for next run, then run again
+        $this->log('Updating Runner state to self::STATE_IDLE');
+        $runner->setState($runner::STATE_IDLE);
 
         $this->log('Sleeping ...');
         sleep($runner->getRunInterval());
@@ -468,7 +467,7 @@ class Daemon
 
         if ($this->cronarchy instanceof Cronarchy) {
             $runner = $this->cronarchy->getRunner();
-            $runner->setState($runner::STATE_IDLE);
+            $runner->setState($runner::STATE_STOPPED);
             $runner->setLastRunTime();
         }
 
