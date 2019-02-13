@@ -126,7 +126,7 @@ class Runner
      *                             run again.
      * @param int    $maxRunTime   The maximum amount of time, in seconds, that the daemon is allowed to run for
      *                             before it is considered to have erred or be stuck.
-     * @param bool   $pingSelf     Whether or not the daemon pings itself.. This is an EXPERIMENTAL feature!
+     * @param bool   $pingSelf     Whether or not the daemon pings itself. This is an EXPERIMENTAL feature!
      */
     public function __construct(
         $daemonUrl,
