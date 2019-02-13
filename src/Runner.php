@@ -51,21 +51,30 @@ class Runner
      *
      * @since [*next-version*]
      */
-    const STATE_OPTION_SUFFIX = 'cronarchy_state';
+    const OPTION_STATE = 'cronarchy_state';
 
     /**
      * The suffix of the name of the option where the timestamp for the last state change is stored.
      *
      * @since [*next-version*]
      */
-    const LAST_STATE_CHANGE_OPTION_SUFFIX = 'cronarchy_last_state_change';
+    const OPTION_LAST_STATE_CHANGE = 'cronarchy_last_state_change';
 
     /**
      * The suffix of the name of the option where the daemon's last run timestamp is stored.
      *
      * @since [*next-version*]
      */
-    const LAST_RUN_OPTION_SUFFIX = 'cronarchy_last_run';
+    const OPTION_LAST_RUN = 'cronarchy_last_run';
+
+    /**
+     * The ID of the Cronarchy instance.
+     *
+     * @since [*next-version*]
+     *
+     * @var string
+     */
+    protected $instanceId;
 
     /**
      * The absolute URL to the daemon script.
@@ -77,69 +86,31 @@ class Runner
     protected $daemonUrl;
 
     /**
-     * The prefix to use for options in the wp_options table.
+     * The config instance.
      *
      * @since [*next-version*]
      *
-     * @var string
+     * @var Config
      */
-    protected $optionPrefix;
-
-    /**
-     * The maximum amount of time, in seconds, that need to elapse before the daemon can run again.
-     *
-     * @since [*next-version*]
-     *
-     * @var int
-     */
-    protected $runInterval;
-
-    /**
-     * The maximum amount of time, in seconds, that the daemon is allowed to run for before it is considered to have
-     * erred or be stuck.
-     *
-     * @since [*next-version*]
-     *
-     * @var int
-     */
-    protected $maxRunTime;
-
-    /**
-     * Whether or not the daemon pings itself.
-     *
-     * This is an EXPERIMENTAL feature!
-     *
-     * @since [*next-version*]
-     *
-     * @var bool
-     */
-    protected $pingSelf;
+    protected $config;
 
     /**
      * Constructor.
      *
      * @since [*next-version*]
      *
-     * @param string $daemonUrl    The absolute URL to the daemon script.
-     * @param string $optionPrefix The prefix to use for options in the wp_options table.
-     * @param int    $runInterval  The maximum amount of time, in seconds, that need to elapse before the daemon can
-     *                             run again.
-     * @param int    $maxRunTime   The maximum amount of time, in seconds, that the daemon is allowed to run for
-     *                             before it is considered to have erred or be stuck.
-     * @param bool   $pingSelf     Whether or not the daemon pings itself. This is an EXPERIMENTAL feature!
+     * @param string $instanceId The prefix to use for options in the wp_options table.
+     * @param string $daemonUrl  The absolute URL to the daemon script.
+     * @param Config $config     The config instance.
      */
     public function __construct(
+        $instanceId,
         $daemonUrl,
-        $optionPrefix = '',
-        $runInterval = 10,
-        $maxRunTime = 600,
-        $pingSelf = false
+        Config $config
     ) {
-        $this->daemonUrl    = $daemonUrl;
-        $this->optionPrefix = $optionPrefix;
-        $this->runInterval  = $runInterval;
-        $this->maxRunTime   = $maxRunTime;
-        $this->pingSelf     = $pingSelf;
+        $this->config     = $config;
+        $this->daemonUrl  = $daemonUrl;
+        $this->instanceId = $instanceId;
     }
 
     /**
@@ -151,19 +122,7 @@ class Runner
      */
     public function getState()
     {
-        return intval(get_option($this->getStateOptionName(), 0));
-    }
-
-    /**
-     * Retrieves the timestamp for when the last state change occurred.
-     *
-     * @since [*next-version*]
-     *
-     * @return int
-     */
-    public function getLastStateChangeTime()
-    {
-        return intval(get_option($this->getLastStateChangeOptionName(), time()));
+        return intval($this->getOption(static::OPTION_STATE));
     }
 
     /**
@@ -175,33 +134,20 @@ class Runner
      */
     public function setState($state)
     {
-        update_option($this->getStateOptionName(), intval($state));
-        update_option($this->getLastStateChangeOptionName(), intval($state));
+        $this->saveOption(static::OPTION_STATE, intval($state));
+        $this->saveOption(static::OPTION_LAST_STATE_CHANGE, time());
     }
 
     /**
-     * Retrieves the maximum amount of time, in seconds, that need to elapse before the daemon can run again.
+     * Retrieves the timestamp for when the last state change occurred.
      *
      * @since [*next-version*]
      *
      * @return int
      */
-    public function getRunInterval()
+    public function getLastStateChangeTime()
     {
-        return $this->runInterval;
-    }
-
-    /**
-     * Retrieves the maximum amount of time, in seconds, that the daemon is allowed to run for before it is
-     * considered to have erred or be stuck.
-     *
-     * @since [*next-version*]
-     *
-     * @return int
-     */
-    public function getMaxRunTime()
-    {
-        return $this->maxRunTime;
+        return intval($this->getOption(static::OPTION_LAST_STATE_CHANGE, time()));
     }
 
     /**
@@ -213,7 +159,7 @@ class Runner
      */
     public function getLastRunTime()
     {
-        return intval(get_option($this->getLastRunOptionName(), 0));
+        return intval($this->getOption(static::OPTION_LAST_RUN, 0));
     }
 
     /**
@@ -226,22 +172,7 @@ class Runner
     public function setLastRunTime($time = null)
     {
         $value = ($time === null) ? time() : intval($time);
-
-        update_option($this->getLastRunOptionName(), $value);
-    }
-
-    /**
-     * Returns whether or not the daemon pings itself.
-     *
-     * This is an EXPERIMENTAL feature!
-     *
-     * @since [*next-version*]
-     *
-     * @return bool True if multi-threaded, false if not.
-     */
-    public function isSelfPinging()
-    {
-        return $this->pingSelf;
+        $this->saveOption(static::OPTION_LAST_RUN, $value);
     }
 
     /**
@@ -258,7 +189,7 @@ class Runner
     protected function canRunDaemon()
     {
         $lastRun = time() - $this->getLastRunTime();
-        $tooSoon = $lastRun <= $this->runInterval;
+        $tooSoon = $lastRun <= $this->config['run_interval'];
 
         if ($tooSoon) {
             return false;
@@ -267,7 +198,7 @@ class Runner
         $currentState  = $this->getState();
         $lastStateTime = time() - $this->getLastStateChangeTime();
 
-        if ($lastStateTime >= $this->maxRunTime && $currentState > static::STATE_IDLE) {
+        if ($lastStateTime >= $this->config['max_total_run_time'] && $currentState > static::STATE_IDLE) {
             return false;
         }
 
@@ -282,7 +213,7 @@ class Runner
     public function runDaemon()
     {
         $doingCron     = defined('DOING_CRON') && DOING_CRON;
-        $daemonRunSelf = $doingCron && $this->pingSelf;
+        $daemonRunSelf = $doingCron && $this->config['self_pinging'];
 
         if (!$this->canRunDaemon() && !$daemonRunSelf) {
             return;
@@ -306,30 +237,50 @@ class Runner
      */
     protected function getStateOptionName()
     {
-        return $this->optionPrefix . static::STATE_OPTION_SUFFIX;
+        return $this->instanceId . static::OPTION_STATE;
     }
 
     /**
-     * Retrieves the option name for the last time the state was changed.
+     * Retrieves the value of a database option.
      *
      * @since [*next-version*]
      *
-     * @return string
+     * @param string     $name    The name of the option whose value is to be retrieved.
+     * @param mixed|null $default The default value to return if the option does not exist.
+     *
+     * @return mixed The option value.
      */
-    protected function getLastStateChangeOptionName()
+    protected function getOption($name, $default = null)
     {
-        return $this->optionPrefix . static::LAST_STATE_CHANGE_OPTION_SUFFIX;
+        return get_option($this->getOptionName($name), $default);
     }
 
     /**
-     * Retrieves the option name for the runner's last run time.
+     * Saves an option's value to the database.
      *
      * @since [*next-version*]
      *
-     * @return string
+     * @param string $name  The name of the option whose value is to be saved.
+     * @param mixed  $value The value to save for the option.
+     *
+     * @return bool True on success, false on failure.
      */
-    protected function getLastRunOptionName()
+    protected function saveOption($name, $value)
     {
-        return $this->optionPrefix . static::LAST_RUN_OPTION_SUFFIX;
+        return update_option($this->getOptionName($name), $value);
+    }
+
+    /**
+     * Retrieves the full option name, prefixes with the instance ID.
+     *
+     * @since [*next-version*]
+     *
+     * @param string $name The short option name.
+     *
+     * @return string The full prefixed option name.
+     */
+    protected function getOptionName($name)
+    {
+        return sprintf('%s_%s', $this->instanceId, $name);
     }
 }
