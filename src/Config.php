@@ -31,12 +31,15 @@ class Config extends ArrayObject
      * @since [*next-version*]
      *
      * @param string $savePath The path to the config's save file.
-     * @param array  $input    Config input data.
+     * @param array  $data     Config input data.
      */
-    public function __construct($savePath, $input = [])
+    public function __construct($savePath, $data = [])
     {
-        unset($input['wp_path']);
-        parent::__construct(array_merge($this->getDefaults(), $input));
+        unset($data['wp_path']);
+        $input = (!empty($data))
+            ? array_merge($this->getDefaults(), $data)
+            : [];
+        parent::__construct($input);
 
         $this->setFilePath($savePath);
     }
@@ -66,10 +69,8 @@ class Config extends ArrayObject
      */
     protected function getDefaults()
     {
-        $absPath = defined('ABSPATH') ? ABSPATH : null;
-
         return [
-            'wp_path'            => $absPath,
+            'wp_path'            => defined('ABSPATH') ? ABSPATH : null,
             'run_interval'       => 10,
             'max_job_run_time'   => 60,
             'max_total_run_time' => 600,
