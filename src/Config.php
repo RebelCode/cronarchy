@@ -67,13 +67,14 @@ class Config extends ArrayObject
     protected function getDefaults()
     {
         return [
-            'wp_path' => ABSPATH,
-            'run_interval' => 10,
-            'max_job_run_time' => 60,
+            'wp_path'            => ABSPATH,
+            'run_interval'       => 10,
+            'max_job_run_time'   => 60,
             'max_total_run_time' => 600,
             'delete_failed_jobs' => false,
-            'logging_enabled' => false,
-            'log_file_path' => 'cronarchy.log',
+            'self_pinging'       => false,
+            'logging_enabled'    => false,
+            'log_file_path'      => 'cronarchy.log',
         ];
     }
 
