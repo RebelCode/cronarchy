@@ -12,32 +12,22 @@ use Exception;
 class Daemon
 {
     /**
-     * The config key for enabling/disabling logging.
+     * The ID of the {@link Cronarchy} instance to use.
      *
      * @since [*next-version*]
+     *
+     * @var string
      */
-    const ENABLE_LOGGING = 'enable_logging';
+    protected $instanceId;
 
     /**
-     * The config key for specifying the path of the log file to write logs to.
+     * The path to the daemon configuration file.
      *
      * @since [*next-version*]
-     */
-    const LOG_FILE_PATH = 'log_file_path';
-
-    /**
-     * The config key for maximum number of directories to search in when locating WordPress.
      *
-     * @since [*next-version*]
+     * @var array
      */
-    const MAX_DIR_SEARCH = 'max_dir_search';
-
-    /**
-     * The config key for enabling or disabling the deletion of failed jobs.
-     *
-     * @since [*next-version*]
-     */
-    const DELETE_FAILED_JOBS = 'delete_failed_jobs';
+    protected $configPath;
 
     /**
      * The cronarchy instance.
@@ -58,29 +48,11 @@ class Daemon
     protected $currentJob = null;
 
     /**
-     * The ID of the {@link Cronarchy} instance to use.
+     * The config instance.
      *
      * @since [*next-version*]
      *
-     * @var string
-     */
-    protected $instanceId;
-
-    /**
-     * The directory of the caller, i.e. the daemon entry script.
-     *
-     * @since [*next-version*]
-     *
-     * @var string
-     */
-    protected $callerDir;
-
-    /**
-     * The daemon's configuration.
-     *
-     * @since [*next-version*]
-     *
-     * @var array
+     * @var Config
      */
     protected $config;
 
@@ -90,18 +62,14 @@ class Daemon
      * @since [*next-version*]
      *
      * @param string $instanceId The ID of the {@link Cronarchy} instance to use.
-     * @param string $callerDir  The directory of the caller, i.e. the daemon entry script.
-     * @param array  $config     The daemon's configuration.
+     * @param string $configPath The path to the daemon configuration file.
      */
     public function __construct(
         $instanceId,
-        $callerDir,
-        $config = []
+        $configPath
     ) {
         $this->instanceId = (string) $instanceId;
-        $this->callerDir = $callerDir;
-        $this->instanceId = $instanceId;
-        $this->config = $config;
+        $this->configPath = $configPath;
     }
 
     /**
@@ -160,17 +128,17 @@ class Daemon
      */
     public function loadConfig()
     {
-        $this->log('Loading config ...', 1);
+        $this->log(sprintf('Loading config from "%s" ...', $this->configPath), 1);
 
-        if (empty($this->instanceId)) {
-            $this->log('The instance ID is invalid or not set!');
+        try {
+            $this->config = new Config($this->configPath);
+            $this->config->load();
+        } catch (Exception $exception) {
+            $this->log(sprintf('Error while loading config: "%s"', $exception->getMessage()), -1);
             exit;
         }
 
-        $this->config = array_merge($this->getDefaultConfig(), $this->config);
-
-        $this->log('Config:', 1);
-        $this->log(print_r($this->config, true), -1);
+        $this->log('Config loaded successfully!', -1);
     }
 
     /**
@@ -181,86 +149,24 @@ class Daemon
     public function loadWordPress()
     {
         $this->log('Loading WordPress environment', 1);
-        $this->log('Searching for `wp-load.php` file', 1);
 
-        if (($wpLoadFilePath = $this->findWordPress()) === null) {
+        if (!($this->config instanceof Config)) {
+            $this->log('Config was not loaded or did not load correctly!', -1);
             exit;
         }
 
-        $this->log(null, -1);
-
-        // Define WordPress Cron constant for compatibility with themes and plugins
-        $this->log('Defining `DOING_CRON` constant ...');
-        define('DOING_CRON', true);
-
-        // Load WordPress
-        $this->log('Loading `wp-load.php` ...');
-        require_once $wpLoadFilePath;
-
-        $this->log('WordPress has been loaded!', -1);
-    }
-
-    /**
-     * Finds the path to the WordPress `wp-load.php` file.
-     *
-     * @since [*next-version*]
-     *
-     * @return string|null The path to the file if found, or null if not found.
-     */
-    public function findWordPress()
-    {
-        $dirCount = 0;
-        $maxCount = $this->config[static::MAX_DIR_SEARCH];
-        $directory = $this->callerDir;
-
-        do {
-            $this->log(sprintf('Searching in "%s"', $directory));
-            $wpLoadFile = $this->findWordPressFromDirectory($directory);
-
-            if ($wpLoadFile !== null) {
-                $this->log(sprintf('Found WordPress: "%s"', $wpLoadFile));
-
-                return $wpLoadFile;
-            }
-
-            $directory = realpath($directory.'/..');
-            ++$dirCount;
-        } while (is_dir($directory) && $dirCount < $maxCount);
-
-        $this->log('Could not find WordPress manually');
-
-        return null;
-    }
-
-    /**
-     * Searches for WordPress from a specific directory, testing various different known installation types.
-     *
-     * @since [*next-version*]
-     *
-     * @param string $directory The path of the directory to search in.
-     *
-     * @return string|null The path to the WordPress `wp-load.php` file, or null if not found.
-     */
-    protected function findWordPressFromDirectory($directory)
-    {
-        // The list of directory structures to search in, relative to the root (ABSPATH).
-        $dirTypes = [
-            '',    // Vanilla installations
-            '/wp', // Bedrock installations
-        ];
-
-        foreach ($dirTypes as $_suffix) {
-            $subDirectory = realpath($directory.$_suffix);
-            $wpLoadFile = $subDirectory.'/wp-load.php';
-
-            if (!empty($subDirectory) && is_readable($wpLoadFile)) {
-                $this->log(sprintf('Found WordPress at "%s"', $subDirectory));
-
-                return $wpLoadFile;
-            }
+        if (!isset($this->config['wp_path'])) {
+            $this->log('Config has missing `wp_path` entry', -1);
+            exit;
         }
 
-        return null;
+        $wpPath = rtrim($this->config['wp_path'], '/');
+        $this->log(sprintf('Retrieved WordPress path from config: "%s"', $wpPath));
+
+        $this->log('Loading `wp-load.php` ...');
+        require_once rtrim($wpPath, '/') . '/wp-load.php';
+
+        $this->log('WordPress has been loaded!', -1);
     }
 
     /**
@@ -281,10 +187,13 @@ class Daemon
             exit;
         }
 
-        $runner = $this->cronarchy->getRunner();
+        // Change the daemon's config pointer to point to the instance's config
+        $this->log('Swapping config instance ...');
+        $this->config = $this->cronarchy->getConfig();
 
-        $this->log('Checking Runner state ...');
         // Ensure the runner is not in an idle state
+        $this->log('Checking Runner state ...');
+        $runner = $this->cronarchy->getRunner();
         if ($runner->getState() < $runner::STATE_QUEUED) {
             $this->log('Daemon is not in `STATE_QUEUED` state and should not have been executed!');
             exit;
@@ -306,9 +215,7 @@ class Daemon
     public function runPendingJobs()
     {
         try {
-            $manager = $this->cronarchy->getManager();
-            $runner = $this->cronarchy->getRunner();
-            $pendingJobs = $manager->getPendingJobs();
+            $pendingJobs = $this->cronarchy->getManager()->getPendingJobs();
 
             if (empty($pendingJobs)) {
                 $this->log('There are no pending jobs to run!');
@@ -316,19 +223,22 @@ class Daemon
                 return;
             }
 
-            // Update the runner state to indicate that it is preparing to run
+            // Update the runner state to indicate that it is running
+            $runner = $this->cronarchy->getRunner();
             $runner->setState($runner::STATE_RUNNING);
             $this->log('Running jobs ...', 1);
 
             foreach ($pendingJobs as $job) {
-                $this->currentJob = $job;
-                $this->runJob($job, $manager);
+                // Extend the time limit for this job
+                set_time_limit($this->config['max_job_run_time']);
+                // Run the job
+                $this->runJob($this->currentJob = $job);
                 $this->currentJob = null;
             }
 
             $this->log(null, -1);
         } catch (Exception $exception) {
-            $this->log('Exception: '.$exception->getMessage());
+            $this->log('Exception: ' . $exception->getMessage());
         }
 
         $this->log('All pending jobs have been run successfully!');
@@ -339,13 +249,14 @@ class Daemon
      *
      * @since [*next-version*]
      *
-     * @param Job        $job     The job to run.
-     * @param JobManager $manager The manager to use to schedule recurrences.
+     * @param Job $job The job to run.
      *
      * @throws Exception If failed to schedule the job recurrence or delete the job.
      */
-    protected function runJob(Job $job, JobManager $manager)
+    protected function runJob(Job $job)
     {
+        $manager = $this->cronarchy->getManager();
+
         try {
             $this->log(sprintf('Running job with hook `%s`... ', $job->getHook()), 0, false);
             $job->run();
@@ -353,7 +264,7 @@ class Daemon
         } catch (Exception $exception) {
             $this->log('error!', 1);
 
-            if (!$this->config[static::DELETE_FAILED_JOBS]) {
+            if (!$this->config['delete_failed_jobs']) {
                 $this->log('This job will remain in the database to be re-run later');
 
                 return;
@@ -401,7 +312,7 @@ class Daemon
         $runner->setState($runner::STATE_IDLE);
 
         $this->log('Sleeping ...');
-        sleep($runner->getRunInterval());
+        sleep($this->config['run_interval']);
 
         $this->log('Pinging self through Runner', -1);
         $runner->runDaemon();
@@ -419,10 +330,10 @@ class Daemon
      */
     public function log($text, $modIndent = 0, $endLine = true)
     {
-        static $indent = 0;
+        static $indent    = 0;
         static $continues = false;
 
-        if (!$this->config[static::ENABLE_LOGGING]) {
+        if (!$this->config['logging_enabled']) {
             return;
         }
 
@@ -437,13 +348,13 @@ class Daemon
                 ? PHP_EOL
                 : '';
 
-            $message = $prefix.$indentStr.$text.$eolChar;
+            $message = $prefix . $indentStr . $text . $eolChar;
 
-            file_put_contents($this->config[static::LOG_FILE_PATH], $message, FILE_APPEND);
+            file_put_contents($this->config['log_file_path'], $message, FILE_APPEND);
         }
 
         $continues = !$endLine;
-        $indent = max(0, $indent + $modIndent);
+        $indent    = max(0, $indent + $modIndent);
     }
 
     /**
@@ -458,10 +369,10 @@ class Daemon
         if ($this->currentJob instanceof Job) {
             $this->log('', -100);
             $this->log('Daemon script ended unexpectedly while running a job', 1);
-            $this->log('Job ID: '.$this->currentJob->getId());
-            $this->log('Job hook: '.$this->currentJob->getHook());
-            $this->log('Job timestamp: '.$this->currentJob->getTimestamp());
-            $this->log('Job recurrence: '.$this->currentJob->getRecurrence());
+            $this->log('Job ID: ' . $this->currentJob->getId());
+            $this->log('Job hook: ' . $this->currentJob->getHook());
+            $this->log('Job timestamp: ' . $this->currentJob->getTimestamp());
+            $this->log('Job recurrence: ' . $this->currentJob->getRecurrence());
             $this->log(null, -1);
         }
 
@@ -473,22 +384,5 @@ class Daemon
 
         $this->log('Exiting ...');
         exit;
-    }
-
-    /**
-     * Retrieves the default config values.
-     *
-     * @since [*next-version*]
-     *
-     * @return array
-     */
-    protected function getDefaultConfig()
-    {
-        return [
-            static::ENABLE_LOGGING => false,
-            static::LOG_FILE_PATH => $this->callerDir.'/cronarchy-log.txt',
-            static::MAX_DIR_SEARCH => 10,
-            static::DELETE_FAILED_JOBS => false,
-        ];
     }
 }
