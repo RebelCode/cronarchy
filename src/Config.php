@@ -31,10 +31,12 @@ class Config extends ArrayObject
      * @since [*next-version*]
      *
      * @param string $savePath The path to the config's save file.
+     * @param array  $input    Config input data.
      */
-    public function __construct($savePath)
+    public function __construct($savePath, $input = [])
     {
-        parent::__construct($this->getDefaults());
+        unset($input['wp_path']);
+        parent::__construct(array_merge($this->getDefaults(), $input));
 
         $this->setFilePath($savePath);
     }

@@ -148,14 +148,15 @@ class Cronarchy
      * @since [*next-version*]
      *
      * @param string $instanceId An ID for the instance. Must be unique site-wide.
-     * @param string $configFile The path to the daemon config file, which will be created if it does not exist.
      * @param string $daemonUrl  The absolute URL to the daemon file.
+     * @param string $configFile The path to the daemon config file, which will be created if it does not exist.
+     * @param array  $config     Initial config to save to the config file if it does not exist.
      *
      * @throws Exception If an error occurs.
      *
      * @return Cronarchy The created instance.
      */
-    public static function setup($instanceId, $configFile, $daemonUrl)
+    public static function setup($instanceId, $daemonUrl, $configFile, $config = [])
     {
         global $wpdb;
 
@@ -163,7 +164,7 @@ class Cronarchy
         $jobsTable->init();
         $jobsTable->query("SET time_zone='%s';", [static::getJobsTableTimezone()]);
 
-        $config = new Config($configFile);
+        $config = new Config($configFile, $config);
         try {
             $config->load();
         } catch (RuntimeException $exception) {
