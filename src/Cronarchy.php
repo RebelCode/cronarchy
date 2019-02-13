@@ -4,9 +4,10 @@ namespace RebelCode\Cronarchy;
 
 use DateTime;
 use Exception;
+use RuntimeException;
 
 /**
- * The main class for cronarchy, comprised of a job manager and a daemon runner.
+ * The main class for cronarchy, comprised of a job manager, a daemon runner and a config manager.
  *
  * @since [*next-version*]
  */
@@ -47,6 +48,15 @@ class Cronarchy
     protected $runner;
 
     /**
+     * The config instance.
+     *
+     * @since [*next-version*]
+     *
+     * @var Config
+     */
+    protected $config;
+
+    /**
      * Constructor.
      *
      * @since [*next-version*]
@@ -54,12 +64,14 @@ class Cronarchy
      * @param string     $instanceId The instance ID. Must be unique.
      * @param JobManager $manager    The job manager instance.
      * @param Runner     $runner     The daemon runner instance.
+     * @param Config     $config     The config instance.
      */
-    public function __construct($instanceId, JobManager $manager, Runner $runner)
+    public function __construct($instanceId, JobManager $manager, Runner $runner, Config $config)
     {
         $this->instanceId = $instanceId;
         $this->manager    = $manager;
         $this->runner     = $runner;
+        $this->config     = $config;
     }
 
     /**
@@ -97,6 +109,18 @@ class Cronarchy
     }
 
     /**
+     * Retrieves the config instance.
+     *
+     * @since [*next-version*]
+     *
+     * @return Config
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
+    /**
      * Initializes the instance.
      *
      * @since [*next-version*]
@@ -123,16 +147,15 @@ class Cronarchy
      *
      * @since [*next-version*]
      *
-     * @param string $instanceId  An ID for the instance. Must be unique site-wide.
-     * @param string $daemonUrl   The absolute URL to the daemon file.
-     * @param int    $runInterval The max interval, in seconds, between cron runs. Default is 10 seconds.
-     * @param int    $maxRunTime  The max time, in seconds, that a single job can run for. Default is 10 minutes.
+     * @param string $instanceId An ID for the instance. Must be unique site-wide.
+     * @param string $configFile The path to the daemon config file, which will be created if it does not exist.
+     * @param string $daemonUrl  The absolute URL to the daemon file.
      *
      * @throws Exception If an error occurs.
      *
      * @return Cronarchy The created instance.
      */
-    public static function setup($instanceId, $daemonUrl, $runInterval = 10, $maxRunTime = 600)
+    public static function setup($instanceId, $configFile, $daemonUrl)
     {
         global $wpdb;
 
@@ -140,9 +163,17 @@ class Cronarchy
         $jobsTable->init();
         $jobsTable->query("SET time_zone='%s';", [static::getJobsTableTimezone()]);
 
+        $config = new Config($configFile);
+        try {
+            $config->load();
+        } catch (RuntimeException $exception) {
+            $config->save();
+        }
+
         $manager  = new JobManager($instanceId, $jobsTable);
-        $runner   = new Runner($daemonUrl, "{$instanceId}_", $runInterval, $maxRunTime);
-        $instance = new self($instanceId, $manager, $runner);
+        $runner   = new Runner($instanceId, $config, $daemonUrl);
+        $instance = new self($instanceId, $manager, $runner, $config);
+        $instance->init();
 
         return $instance;
     }
