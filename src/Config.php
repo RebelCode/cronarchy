@@ -66,8 +66,10 @@ class Config extends ArrayObject
      */
     protected function getDefaults()
     {
+        $absPath = defined('ABSPATH') ? ABSPATH : null;
+
         return [
-            'wp_path'            => ABSPATH,
+            'wp_path'            => $absPath,
             'run_interval'       => 10,
             'max_job_run_time'   => 60,
             'max_total_run_time' => 600,
