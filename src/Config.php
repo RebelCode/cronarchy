@@ -74,7 +74,7 @@ class Config extends ArrayObject
             'delete_failed_jobs' => false,
             'self_pinging'       => false,
             'logging_enabled'    => false,
-            'log_file_path'      => 'cronarchy.log',
+            'log_file_path'      => dirname($this->saveFile) . '/cronarchy.log',
         ];
     }
 
