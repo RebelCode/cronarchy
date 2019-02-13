@@ -199,11 +199,6 @@ class Daemon
             exit;
         }
 
-        // Update the execution time limit for this script
-        $maxRunTime = $runner->getMaxRunTime();
-        $this->log(sprintf('Setting max run time to %d seconds', $maxRunTime));
-        set_time_limit($maxRunTime);
-
         $this->log(null, -1);
     }
 
