@@ -302,7 +302,7 @@ class Daemon
         $runner = $this->cronarchy->getRunner();
 
         // If the runner is not set to ping itself, clean up and exit
-        if (!$runner->isSelfPinging()) {
+        if (!$this->config['self_pinging']) {
             $this->log('Daemon finished successfully', -1);
             exit;
         }
