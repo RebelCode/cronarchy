@@ -198,11 +198,11 @@ class Runner
         $currentState  = $this->getState();
         $lastStateTime = time() - $this->getLastStateChangeTime();
 
-        if ($lastStateTime >= $this->config['max_total_run_time'] && $currentState > static::STATE_IDLE) {
+        if ($currentState > static::STATE_STOPPED && $lastStateTime < $this->config['max_total_run_time']) {
             return false;
         }
 
-        return $currentState === static::STATE_IDLE;
+        return $currentState === static::STATE_STOPPED;
     }
 
     /**
