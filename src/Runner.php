@@ -189,7 +189,8 @@ class Runner
     protected function canRunDaemon()
     {
         $lastRun = time() - $this->getLastRunTime();
-        $tooSoon = $lastRun <= $this->config['run_interval'];
+        $interval = $this->config['run_interval'];
+        $tooSoon = $lastRun <= $interval;
 
         if ($tooSoon) {
             return false;
@@ -198,7 +199,13 @@ class Runner
         $currentState  = $this->getState();
         $lastStateTime = time() - $this->getLastStateChangeTime();
 
-        if ($currentState > static::STATE_STOPPED && $lastStateTime < $this->config['max_total_run_time']) {
+        // If the daemon has been stuck in "queued" state for longer than the run interval, queue it again
+        if ($currentState === static::STATE_QUEUED && $lastStateTime > $interval) {
+            return true;
+        }
+
+        // If the daemon is preparing or running, don't queue it unless it's gone over the max run time
+        if ($currentState > static::STATE_QUEUED && $lastStateTime < $this->config['max_total_run_time']) {
             return false;
         }
 
