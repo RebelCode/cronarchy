@@ -48,13 +48,11 @@ class Config extends ArrayObject
      */
     protected function setFilePath($path)
     {
-        $realPath = realpath($path);
-
-        if (empty($realPath)) {
+        if (empty($path)) {
             throw new RuntimeException('Cronarchy config save file path is invalid');
         }
 
-        $this->saveFile = $realPath;
+        $this->saveFile = $path;
     }
 
     /**
