@@ -188,9 +188,9 @@ class Runner
      */
     protected function canRunDaemon()
     {
-        $lastRun = time() - $this->getLastRunTime();
+        $lastRun  = time() - $this->getLastRunTime();
         $interval = $this->config['run_interval'];
-        $tooSoon = $lastRun <= $interval;
+        $tooSoon  = $lastRun <= $interval;
 
         if ($tooSoon) {
             return false;
