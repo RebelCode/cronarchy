@@ -136,18 +136,7 @@ class Cronarchy
     {
         global $wpdb;
 
-        $jobsTable = new Table(
-            $wpdb,
-            sprintf('%s_jobs', $instanceId),
-            'CREATE TABLE IF NOT EXISTS `{{table}}` (
-                `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-                `hook` varchar(255) NOT NULL,
-                `args` longtext NOT NULL,
-                `timestamp` datetime NOT NULL,
-                `recurrence` bigint DEFAULT NULL,
-                PRIMARY KEY (`id`)
-            ) ENGINE=InnoDB;'
-        );
+        $jobsTable = new Table($wpdb, sprintf('%s_jobs', $instanceId), static::getJobsTableSql());
         $jobsTable->init();
         $jobsTable->query("SET time_zone='%s';", [static::getJobsTableTimezone()]);
 
@@ -156,6 +145,25 @@ class Cronarchy
         $instance = new self($instanceId, $manager, $runner);
 
         return $instance;
+    }
+
+    /**
+     * Retrieves the jobs table creation SQL.
+     *
+     * @since [*next-version*]
+     *
+     * @return string
+     */
+    protected static function getJobsTableSql()
+    {
+        return 'CREATE TABLE IF NOT EXISTS `{{table}}` (
+                `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+                `hook` varchar(255) NOT NULL,
+                `args` longtext NOT NULL,
+                `timestamp` datetime NOT NULL,
+                `recurrence` bigint DEFAULT NULL,
+                PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB;';
     }
 
     /**
