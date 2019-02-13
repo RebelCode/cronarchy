@@ -171,7 +171,7 @@ class Cronarchy
         }
 
         $manager  = new JobManager($instanceId, $jobsTable);
-        $runner   = new Runner($instanceId, $config, $daemonUrl);
+        $runner   = new Runner($instanceId, $daemonUrl, $config);
         $instance = new self($instanceId, $manager, $runner, $config);
         $instance->init();
 
