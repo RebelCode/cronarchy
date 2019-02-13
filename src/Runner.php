@@ -108,9 +108,9 @@ class Runner
         $daemonUrl,
         Config $config
     ) {
-        $this->config     = $config;
-        $this->daemonUrl  = $daemonUrl;
         $this->instanceId = $instanceId;
+        $this->daemonUrl  = $daemonUrl;
+        $this->config     = $config;
     }
 
     /**
