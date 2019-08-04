@@ -96,6 +96,7 @@ class Table
     public function query($query, $vargs = [])
     {
         $prepared = vsprintf($query, $this->escapeArgs($vargs));
+        /** @var int|false $numRows */
         $numRows  = $this->wpdb->query($prepared);
 
         if ($numRows !== false) {
@@ -115,7 +116,7 @@ class Table
      *
      * @throws Exception If an error occurred.
      *
-     * @return object[] A numeric array of fetched records, each as an object.
+     * @return Record[] A numeric array of fetched records, each as an object.
      */
     public function fetch($condition = '', $vargs = [])
     {

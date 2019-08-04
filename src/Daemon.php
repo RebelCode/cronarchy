@@ -25,7 +25,7 @@ class Daemon
      *
      * @since [*next-version*]
      *
-     * @var array
+     * @var string
      */
     protected $configPath;
 
@@ -318,10 +318,10 @@ class Daemon
      *
      * @since [*next-version*]
      *
-     * @param string $text      The text to log.
-     * @param int    $modIndent How much to change the indentation. Negative numbers are allowed. This applies AFTER the
-     *                          log message has been written to file.
-     * @param bool   $endLine   True to end the line, false to not.
+     * @param string|null $text      The text to log.
+     * @param int         $modIndent How much to change the indentation. Negative numbers are allowed. This applies AFTER the
+     *                               log message has been written to file.
+     * @param bool        $endLine   True to end the line, false to not.
      */
     public function log($text, $modIndent = 0, $endLine = true)
     {

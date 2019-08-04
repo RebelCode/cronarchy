@@ -35,7 +35,7 @@ class JobManager
      *
      * @since [*next-version*]
      *
-     * @param string $instanceId The instance ID. Must be unique environment-wide.
+     * @param int    $instanceId The instance ID. Must be unique environment-wide.
      * @param Table  $jobsTable  The jobs table instance.
      */
     public function __construct($instanceId, Table $jobsTable)
@@ -220,7 +220,7 @@ class JobManager
      *
      * @since [*next-version*]
      *
-     * @param object $record The database record.
+     * @param Record $record The database record.
      *
      * @return Job The job instance.
      */
