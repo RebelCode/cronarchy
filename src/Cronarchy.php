@@ -25,7 +25,7 @@ class Cronarchy
      *
      * @since [*next-version*]
      *
-     * @var int
+     * @var string
      */
     protected $instanceId;
 
@@ -61,7 +61,7 @@ class Cronarchy
      *
      * @since [*next-version*]
      *
-     * @param int        $instanceId The instance ID. Must be unique.
+     * @param string     $instanceId The instance ID. Must be unique.
      * @param JobManager $manager    The job manager instance.
      * @param Runner     $runner     The daemon runner instance.
      * @param Config     $config     The config instance.
@@ -147,7 +147,7 @@ class Cronarchy
      *
      * @since [*next-version*]
      *
-     * @param int    $instanceId An ID for the instance. Must be unique site-wide.
+     * @param string $instanceId An ID for the instance. Must be unique site-wide.
      * @param string $daemonUrl  The absolute URL to the daemon file.
      * @param string $configFile The path to the daemon config file, which will be created if it does not exist.
      * @param array  $config     Initial config to save to the config file if it does not exist.
