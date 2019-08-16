@@ -99,7 +99,7 @@ class Runner
      *
      * @since [*next-version*]
      *
-     * @param int    $instanceId The prefix to use for options in the wp_options table.
+     * @param string $instanceId The prefix to use for options in the wp_options table.
      * @param string $daemonUrl  The absolute URL to the daemon script.
      * @param Config $config     The config instance.
      */
