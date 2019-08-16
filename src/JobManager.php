@@ -26,7 +26,7 @@ class JobManager
      *
      * @since [*next-version*]
      *
-     * @var int
+     * @var string
      */
     protected $instanceId;
 
@@ -35,7 +35,7 @@ class JobManager
      *
      * @since [*next-version*]
      *
-     * @param int    $instanceId The instance ID. Must be unique environment-wide.
+     * @param string $instanceId The instance ID. Must be unique environment-wide.
      * @param Table  $jobsTable  The jobs table instance.
      */
     public function __construct($instanceId, Table $jobsTable)
