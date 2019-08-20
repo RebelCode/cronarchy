@@ -5,14 +5,14 @@ namespace RebelCode\Cronarchy;
 /**
  * Represents a single job.
  *
- * @since [*next-version*]
+ * @since 0.1
  */
 class Job
 {
     /**
      * The job's ID, or null if the job has not been saved to storage yet.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var int|null
      */
@@ -21,7 +21,7 @@ class Job
     /**
      * The timestamp of the job's next run.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var int
      */
@@ -30,7 +30,7 @@ class Job
     /**
      * The WordPress hook that the job triggers when run.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var string
      */
@@ -39,7 +39,7 @@ class Job
     /**
      * The arguments to be passed to the triggered hook when the job is run.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var array
      */
@@ -48,7 +48,7 @@ class Job
     /**
      * Optional amount of time that the job is re-scheduled with after it is run.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var int|null
      */
@@ -57,7 +57,7 @@ class Job
     /**
      * Constructor.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param int|null $id         The job's ID, or null if the job has not been saved to storage yet.
      * @param int      $timestamp  The timestamp of the job's next run.
@@ -78,7 +78,7 @@ class Job
     /**
      * Retrieves the job's ID.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return int|null An integer ID, or null if the job has not been saved to storage yet.
      */
@@ -90,7 +90,7 @@ class Job
     /**
      * Retrieves the timestamp of the job's next run.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return int A unix timestamp.
      */
@@ -102,7 +102,7 @@ class Job
     /**
      * Retrieves the hook that the job triggers when it is run.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return string The string name of the hook.
      */
@@ -114,7 +114,7 @@ class Job
     /**
      * Retrieves the arguments to be passed to the triggered hook when the job is run.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return array A numeric array of argument values.
      */
@@ -126,7 +126,7 @@ class Job
     /**
      * Retrieves the amount of time that the job is re-scheduled with after it is run.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return int|null The recurrence time in seconds or null if the job only runs once.
      */
@@ -138,7 +138,7 @@ class Job
     /**
      * Runs the job.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function run()
     {

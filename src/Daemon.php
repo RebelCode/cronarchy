@@ -7,14 +7,14 @@ use Exception;
 /**
  * The daemon task for Cronarchy.
  *
- * @since [*next-version*]
+ * @since 0.1
  */
 class Daemon
 {
     /**
      * The ID of the {@link Cronarchy} instance to use.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var string
      */
@@ -23,7 +23,7 @@ class Daemon
     /**
      * The path to the daemon configuration file.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var string
      */
@@ -32,7 +32,7 @@ class Daemon
     /**
      * The cronarchy instance.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var Cronarchy|null
      */
@@ -41,7 +41,7 @@ class Daemon
     /**
      * The job that is currently being run.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var Job|null
      */
@@ -50,7 +50,7 @@ class Daemon
     /**
      * The config instance.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var Config
      */
@@ -59,7 +59,7 @@ class Daemon
     /**
      * Constructor.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string $instanceId The ID of the {@link Cronarchy} instance to use.
      * @param string $configPath The path to the daemon configuration file.
@@ -75,7 +75,7 @@ class Daemon
     /**
      * Allows daemon instances to be invoked like a function.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function __invoke()
     {
@@ -85,7 +85,7 @@ class Daemon
     /**
      * Runs the daemon.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function run()
     {
@@ -100,7 +100,7 @@ class Daemon
     /**
      * Initializes the daemon and the environment.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function init()
     {
@@ -124,7 +124,7 @@ class Daemon
     /**
      * Loads the daemon's configuration.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function loadConfig()
     {
@@ -144,7 +144,7 @@ class Daemon
     /**
      * Loads WordPress from `wp-load.php`.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function loadWordPress()
     {
@@ -172,7 +172,7 @@ class Daemon
     /**
      * Loads the Cronarchy instance from the filter and prepares it for running jobs.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function loadInstance()
     {
@@ -205,7 +205,7 @@ class Daemon
     /**
      * Runs all pending jobs.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function runPendingJobs()
     {
@@ -242,7 +242,7 @@ class Daemon
     /**
      * Runs a single job.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param Job $job The job to run.
      *
@@ -283,7 +283,7 @@ class Daemon
     /**
      * Performs clean up and terminates the daemon or pings itself through the runner, depending on configuration.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function finish()
     {
@@ -316,7 +316,7 @@ class Daemon
     /**
      * Logs a message to file.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string|null $text      The text to log.
      * @param int         $modIndent How much to change the indentation. Negative numbers are allowed. This applies AFTER the
@@ -357,7 +357,7 @@ class Daemon
      *
      * Should be called when the script terminates, both successfully or otherwise.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function shutdown()
     {

@@ -8,14 +8,14 @@ use OutOfRangeException;
 /**
  * The job manager class.
  *
- * @since [*next-version*]
+ * @since 0.1
  */
 class JobManager
 {
     /**
      * The jobs table.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var Table
      */
@@ -24,7 +24,7 @@ class JobManager
     /**
      * The instance ID.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var string
      */
@@ -33,7 +33,7 @@ class JobManager
     /**
      * Constructor.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string $instanceId The instance ID. Must be unique environment-wide.
      * @param Table  $jobsTable  The jobs table instance.
@@ -47,7 +47,7 @@ class JobManager
     /**
      * Retrieves the manager instance ID.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function getInstanceId()
     {
@@ -57,7 +57,7 @@ class JobManager
     /**
      * Retrieves a single job by ID or the first job that matches a specific set of properties.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param int|null    $id         Optional ID of the job to retrieve.
      * @param int|null    $time       Optional timestamp to get only jobs scheduled for this time.
@@ -86,7 +86,7 @@ class JobManager
     /**
      * Retrieves scheduled jobs, optionally filtering them based on certain criteria.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param int[]|null  $ids        Optional list of IDs to get only jobs with any of those IDs.
      * @param int|null    $time       Optional timestamp to get only jobs scheduled for this time.
@@ -112,7 +112,7 @@ class JobManager
     /**
      * Retrieves all scheduled jobs that are pending for execution.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @throws Exception If an error occurred while retrieving jobs from the database.
      *
@@ -132,7 +132,7 @@ class JobManager
      * If the job exists (determined by its ID), it is updated with the given job instance's data.
      * If the job does not exist or has a null ID, it is inserted.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param Job $job the job to schedule.
      *
@@ -169,7 +169,7 @@ class JobManager
     /**
      * Cancels the next invocation of a scheduled job and schedules the next invocation, if applicable.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param Job $job The job instance.
      *
@@ -197,7 +197,7 @@ class JobManager
     /**
      * Deletes jobs from the database.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param int[]|null  $ids        Optional list of IDs to delete only jobs with any of those IDs.
      * @param int|null    $time       Optional timestamp to delete only jobs scheduled for this time.
@@ -218,7 +218,7 @@ class JobManager
     /**
      * Creates a job instance from a database record.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param Record $record The database record.
      *
@@ -238,7 +238,7 @@ class JobManager
     /**
      * Serializes a job's hook arguments.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param array $args The hook arguments to serialize.
      *
@@ -255,7 +255,7 @@ class JobManager
     /**
      * Serializes a job's hook arguments.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string $sArgs The serialized hook arguments to unserialize.
      *
@@ -272,7 +272,7 @@ class JobManager
     /**
      * Transforms a timestamp into a database date string.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param int $timestamp The timestamp to transform.
      *
@@ -286,7 +286,7 @@ class JobManager
     /**
      * Builds a condition to match jobs based on a combination of their properties.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param int[]|null  $ids        Optional list of IDs to match only the jobs with any of those IDs.
      * @param int|null    $time       Optional timestamp to match only jobs scheduled for this time.

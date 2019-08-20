@@ -7,70 +7,70 @@ namespace RebelCode\Cronarchy;
  *
  * This class is responsible for running the daemon script, as well managing its state and configuration.
  *
- * @since [*next-version*]
+ * @since 0.1
  */
 class Runner
 {
     /**
      * State identifier for when the daemon is not running.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     const STATE_STOPPED = 0;
 
     /**
      * State identifier for when the daemon is idle (waiting to ping itself).
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     const STATE_IDLE = 1;
 
     /**
      * State identifier for when the daemon is queued to run.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     const STATE_QUEUED = 2;
 
     /**
      * State identifier for when the daemon is preparing to run pending jobs.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     const STATE_PREPARING = 3;
 
     /**
      * State identifier for when the daemon is running pending jobs.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     const STATE_RUNNING = 4;
 
     /**
      * The suffix of the name of the option where the daemon's state is stored.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     const OPTION_STATE = 'cronarchy_state';
 
     /**
      * The suffix of the name of the option where the timestamp for the last state change is stored.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     const OPTION_LAST_STATE_CHANGE = 'cronarchy_last_state_change';
 
     /**
      * The suffix of the name of the option where the daemon's last run timestamp is stored.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     const OPTION_LAST_RUN = 'cronarchy_last_run';
 
     /**
      * The ID of the Cronarchy instance.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var int
      */
@@ -79,7 +79,7 @@ class Runner
     /**
      * The absolute URL to the daemon script.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var string
      */
@@ -88,7 +88,7 @@ class Runner
     /**
      * The config instance.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var Config
      */
@@ -97,7 +97,7 @@ class Runner
     /**
      * Constructor.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string $instanceId The prefix to use for options in the wp_options table.
      * @param string $daemonUrl  The absolute URL to the daemon script.
@@ -116,7 +116,7 @@ class Runner
     /**
      * Retrieves the state of the runner.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return int
      */
@@ -128,7 +128,7 @@ class Runner
     /**
      * Sets the state of the runner.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param int $state An integer state. See the "STATE_*" constants.
      */
@@ -141,7 +141,7 @@ class Runner
     /**
      * Retrieves the timestamp for when the last state change occurred.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return int
      */
@@ -153,7 +153,7 @@ class Runner
     /**
      * Retrieves the timestamp for when the daemon was last run.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return int|null The timestamp, or null if the daemon has not yet been run.
      */
@@ -165,7 +165,7 @@ class Runner
     /**
      * Sets the timestamp for when the daemon was last run.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param int|null $time Optional timestamp. If omitted or null, the current timestamp is used.
      */
@@ -182,7 +182,7 @@ class Runner
      * or if its been running for too long, in which case we assume that it erred and never
      * cleaned up its state.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return bool True if the daemon can run, false if not.
      */
@@ -215,7 +215,7 @@ class Runner
     /**
      * Runs the daemon.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function runDaemon()
     {
@@ -238,7 +238,7 @@ class Runner
     /**
      * Retrieves the option name for the runner's state.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return string
      */
@@ -250,7 +250,7 @@ class Runner
     /**
      * Retrieves the value of a database option.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string     $name    The name of the option whose value is to be retrieved.
      * @param mixed|null $default The default value to return if the option does not exist.
@@ -265,7 +265,7 @@ class Runner
     /**
      * Saves an option's value to the database.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string $name  The name of the option whose value is to be saved.
      * @param mixed  $value The value to save for the option.
@@ -280,7 +280,7 @@ class Runner
     /**
      * Retrieves the full option name, prefixes with the instance ID.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string $name The short option name.
      *

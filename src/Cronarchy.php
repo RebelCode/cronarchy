@@ -9,21 +9,21 @@ use RuntimeException;
 /**
  * The main class for cronarchy, comprised of a job manager, a daemon runner and a config manager.
  *
- * @since [*next-version*]
+ * @since 0.1
  */
 class Cronarchy
 {
     /**
      * The name of the filter that is used to retrieve instances.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     const INSTANCE_FILTER = 'get_cronarchy_instance';
 
     /**
      * The instance ID.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var string
      */
@@ -32,7 +32,7 @@ class Cronarchy
     /**
      * The job manager instance.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var JobManager
      */
@@ -41,7 +41,7 @@ class Cronarchy
     /**
      * The daemon runner instance.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var Runner
      */
@@ -50,7 +50,7 @@ class Cronarchy
     /**
      * The config instance.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var Config
      */
@@ -59,7 +59,7 @@ class Cronarchy
     /**
      * Constructor.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string     $instanceId The instance ID. Must be unique.
      * @param JobManager $manager    The job manager instance.
@@ -77,7 +77,7 @@ class Cronarchy
     /**
      * Retrieves the manager instance ID.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function getInstanceId()
     {
@@ -87,7 +87,7 @@ class Cronarchy
     /**
      * Retrieves the job manager instance.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return JobManager
      */
@@ -99,7 +99,7 @@ class Cronarchy
     /**
      * Retrieves the daemon runner instance.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return Runner
      */
@@ -111,7 +111,7 @@ class Cronarchy
     /**
      * Retrieves the config instance.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return Config
      */
@@ -123,7 +123,7 @@ class Cronarchy
     /**
      * Initializes the instance.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function init()
     {
@@ -146,7 +146,7 @@ class Cronarchy
     /**
      * Creates a new cronarchy instance.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string $instanceId An ID for the instance. Must be unique site-wide.
      * @param string $daemonUrl  The absolute URL to the daemon file.
@@ -183,7 +183,7 @@ class Cronarchy
     /**
      * Retrieves the jobs table creation SQL.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return string
      */
@@ -202,7 +202,7 @@ class Cronarchy
     /**
      * Retrieves the timezone to use for the jobs table.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @throws Exception In case of an error.
      *

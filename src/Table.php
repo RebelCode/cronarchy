@@ -8,14 +8,14 @@ use wpdb;
 /**
  * An abstraction class for WPDB tables.
  *
- * @since [*next-version*]
+ * @since 0.1
  */
 class Table
 {
     /**
      * The WordPress database adapter.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var wpdb
      */
@@ -24,7 +24,7 @@ class Table
     /**
      * The name of the table.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var string
      */
@@ -34,7 +34,7 @@ class Table
      * The SQL for creating this table.
      * Any "{{table}}" tokens will be replaced with the table name when this query is executed.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var string
      */
@@ -43,7 +43,7 @@ class Table
     /**
      * Constructor.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param wpdb   $wpdb      The WordPress database adapter instance.
      * @param string $name      The name of the table.
@@ -60,7 +60,7 @@ class Table
     /**
      * Initializes the table.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @throws Exception If an error occurs during initialization.
      */
@@ -72,7 +72,7 @@ class Table
     /**
      * Retrieves the name for this table.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return string
      */
@@ -84,7 +84,7 @@ class Table
     /**
      * Runs a generic query on this table.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string $query The SQL query string.
      * @param array  $vargs Optional interpolation arguments for $query.
@@ -109,7 +109,7 @@ class Table
     /**
      * Fetches records from this table.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string $condition Optional WHERE condition string.
      * @param array  $vargs     Optional interpolation arguments for $condition.
@@ -135,7 +135,7 @@ class Table
     /**
      * Inserts a record into this table.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param array $data    The record to insert.
      * @param array $formats An array of data formats that correspond to each of $data's entries, as either "%d", "%f"
@@ -159,7 +159,7 @@ class Table
     /**
      * Updates records in this table.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param array       $data      An associative array that maps the columns to be updated to their new values.
      * @param array       $formats   An array of data formats that correspond to each of $data's entries, as either
@@ -184,7 +184,7 @@ class Table
     /**
      * Deletes records from this table.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string $condition Optional WHERE condition string.
      * @param array  $vargs     Optional interpolation arguments for $condition.
@@ -204,7 +204,7 @@ class Table
     /**
      * Used internally to build the "WHERE" portion of a query.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string $condition Optional WHERE condition string.
      * @param array  $vargs     Optional interpolation arguments for $condition.
@@ -223,7 +223,7 @@ class Table
     /**
      * Escapes query arguments.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param array $args The arguments to escape.
      *
@@ -237,7 +237,7 @@ class Table
     /**
      * Builds the fields for UPDATE queries.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param array $data    The data, mapping column names to values.
      * @param array $formats The corresponding formats, mapping column names to either "%d", "%f" or "%s".

@@ -12,14 +12,14 @@ use RuntimeException;
  * This is because the daemon needs to access this config prior to loading WordPress, when functions such as
  * `get_option()` or not available.
  *
- * @since [*next-version*]
+ * @since 0.1
  */
 class Config extends ArrayObject
 {
     /**
      * The path to the config's save file.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @var string
      */
@@ -28,7 +28,7 @@ class Config extends ArrayObject
     /**
      * Constructor.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string $savePath The path to the config's save file.
      * @param array  $data     Config input data.
@@ -47,7 +47,7 @@ class Config extends ArrayObject
     /**
      * Sets the path to the config save file.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @param string $path The path to the config's save file.
      */
@@ -63,7 +63,7 @@ class Config extends ArrayObject
     /**
      * Retrieves the default config values.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @return array
      */
@@ -84,7 +84,7 @@ class Config extends ArrayObject
     /**
      * Saves the config to the save file.
      *
-     * @since [*next-version*]
+     * @since 0.1
      */
     public function save()
     {
@@ -94,7 +94,7 @@ class Config extends ArrayObject
     /**
      * Loads the config from the save file.
      *
-     * @since [*next-version*]
+     * @since 0.1
      *
      * @throws RuntimeException If the config save file does not exist or is not readable.
      */
