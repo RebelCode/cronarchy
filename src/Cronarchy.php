@@ -136,9 +136,10 @@ class Cronarchy
         }, 10, 2);
 
         add_action('init', function () {
-            if (!(defined('DOING_CRON') && DOING_CRON)) {
-                $this->getRunner()->runDaemon();
+            if (defined('DOING_CRON') && DOING_CRON) {
+                return;
             }
+            $this->getRunner()->runDaemon();
         });
     }
 

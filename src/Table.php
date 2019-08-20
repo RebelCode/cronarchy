@@ -99,11 +99,11 @@ class Table
         /** @var int|false $numRows */
         $numRows  = $this->wpdb->query($prepared);
 
-        if ($numRows !== false) {
-            return $numRows;
+        if ($numRows === false) {
+            throw new Exception($this->wpdb->last_error);
         }
 
-        throw new Exception($this->wpdb->last_error);
+        return $numRows;
     }
 
     /**
@@ -125,11 +125,11 @@ class Table
 
         $results = $this->wpdb->get_results($query);
 
-        if (is_array($results)) {
-            return $results;
+        if (!is_array($results)) {
+            throw new Exception($this->wpdb->last_error);
         }
 
-        throw new Exception($this->wpdb->last_error);
+        return $results;
     }
 
     /**
