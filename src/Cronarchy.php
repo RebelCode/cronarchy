@@ -25,7 +25,7 @@ class Cronarchy
      *
      * @since [*next-version*]
      *
-     * @var int
+     * @var string
      */
     protected $instanceId;
 

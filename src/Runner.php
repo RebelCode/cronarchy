@@ -72,7 +72,7 @@ class Runner
      *
      * @since [*next-version*]
      *
-     * @var string
+     * @var int
      */
     protected $instanceId;
 

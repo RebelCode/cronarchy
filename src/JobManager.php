@@ -26,7 +26,7 @@ class JobManager
      *
      * @since [*next-version*]
      *
-     * @var int
+     * @var string
      */
     protected $instanceId;
 
@@ -220,7 +220,7 @@ class JobManager
      *
      * @since [*next-version*]
      *
-     * @param object $record The database record.
+     * @param Record $record The database record.
      *
      * @return Job The job instance.
      */
